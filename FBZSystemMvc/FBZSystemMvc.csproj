@@ -13,4 +13,9 @@
   </Content>
 </ItemGroup>
 
+<ItemGroup>
+  <PackageReference Include="Deedle" Version="3.0.0" />
+  <PackageReference Include="FSharp.Core" Version="10.0.100" />
+</ItemGroup>
+
 </Project>
