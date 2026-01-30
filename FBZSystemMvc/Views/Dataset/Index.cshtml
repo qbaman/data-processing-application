@@ -1,0 +1,90 @@
+@model FBZSystemMvc.Models.DatasetIndexViewModel
+@{
+    ViewData["Title"] = "Dataset Search";
+}
+
+<h1>Dataset Search</h1>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label class="form-label">Title contains</label>
+        <input class="form-control" name="TitleContains" value="@Model.Query.TitleContains" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Author contains</label>
+        <input class="form-control" name="AuthorContains" value="@Model.Query.AuthorContains" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Genre</label>
+        <input class="form-control" name="Genre" value="@Model.Query.Genre" />
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">Year from</label>
+        <input class="form-control" type="number" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">Year to</label>
+        <input class="form-control" type="number" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Language</label>
+        <input class="form-control" name="Language" value="@Model.Query.Language" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Edition</label>
+        <input class="form-control" name="Edition" value="@Model.Query.Edition" />
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">Group by</label>
+        <select class="form-select" name="GroupBy">
+            <option value="None" selected="@(Model.Query.GroupBy == "None")">None</option>
+            <option value="Author" selected="@(Model.Query.GroupBy == "Author")">Author</option>
+            <option value="Year" selected="@(Model.Query.GroupBy == "Year")">Year</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="SortDescending" value="true" @(Model.Query.SortDescending ? "checked" : "") />
+            <label class="form-check-label">Sort Z–A</label>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Search</button>
+        <a class="btn btn-outline-secondary" href="/Dataset">Reset</a>
+    </div>
+</form>
+
+<p><strong>@Model.Results.Count</strong> result(s)</p>
+
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Authors</th>
+            <th>Years</th>
+            <th>Genres</th>
+            <th>ISBNs</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in Model.Results)
+    {
+        <tr>
+            <td>@c.MainTitle</td>
+            <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+            <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+            <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+            <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+        </tr>
+    }
+    </tbody>
+</table>
