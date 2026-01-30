@@ -170,6 +170,67 @@
     </div>
 }
 
+@if (Model.SearchList is not null && Model.SearchList.Count > 0)
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Search List (@Model.SearchList.Count)</h5>
+
+                <form method="post" action="/Dataset/ClearList" class="m-0">
+                    <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
+                    <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
+                    <input type="hidden" name="Genre" value="@Model.Query.Genre" />
+                    <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
+                    <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
+                    <input type="hidden" name="Language" value="@Model.Query.Language" />
+                    <input type="hidden" name="Edition" value="@Model.Query.Edition" />
+                    <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
+                    @if (Model.Query.SortDescending)
+                    {
+                        <input type="hidden" name="SortDescending" value="true" />
+                    }
+                    <input type="hidden" name="Page" value="@Model.Query.Page" />
+                    <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Clear</button>
+                </form>
+            </div>
+
+            <ul class="list-group list-group-flush mt-3">
+                @foreach (var item in Model.SearchList)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>@item.MainTitle</span>
+
+                        <form method="post" action="/Dataset/RemoveFromList" class="m-0">
+                            <input type="hidden" name="id" value="@item.Id" />
+
+                            <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
+                            <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
+                            <input type="hidden" name="Genre" value="@Model.Query.Genre" />
+                            <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
+                            <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
+                            <input type="hidden" name="Language" value="@Model.Query.Language" />
+                            <input type="hidden" name="Edition" value="@Model.Query.Edition" />
+                            <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
+                            @if (Model.Query.SortDescending)
+                            {
+                                <input type="hidden" name="SortDescending" value="true" />
+                            }
+                            <input type="hidden" name="Page" value="@Model.Query.Page" />
+                            <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+
+                            <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
+                        </form>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+
 <table class="table table-sm table-striped align-middle">
     <thead>
         <tr>
