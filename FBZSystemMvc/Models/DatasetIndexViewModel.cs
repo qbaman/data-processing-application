@@ -8,4 +8,7 @@ public class DatasetIndexViewModel
     public List<Comic> Results { get; set; } = new();
 
     public List<Comic> SearchList { get; set; } = new();
+
+    public int TotalResults { get; set; }
+    public int TotalPages { get; set; }
 }
