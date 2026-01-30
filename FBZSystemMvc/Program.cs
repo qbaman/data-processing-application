@@ -25,8 +25,15 @@ builder.Services.AddSingleton<ISearchService, SearchService>();
 builder.Services.AddSingleton<ComicFormatter>();
 builder.Services.AddSingleton<ISearchHistoryService, SearchHistoryService>();
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
+builder.Services.AddSingleton<SearchListStore>();
+
 
 var app = builder.Build();
+app.UseSession();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

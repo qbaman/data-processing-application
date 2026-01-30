@@ -65,7 +65,7 @@
 
 <p><strong>@Model.Results.Count</strong> result(s)</p>
 
-<table class="table table-sm table-striped">
+<table class="table table-sm table-striped align-middle">
     <thead>
         <tr>
             <th>Title</th>
@@ -73,6 +73,7 @@
             <th>Years</th>
             <th>Genres</th>
             <th>ISBNs</th>
+            <th class="text-end">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -84,6 +85,26 @@
             <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
             <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
             <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+            <td class="text-end">
+                <form method="post" action="/Dataset/AddToList" style="display:inline">
+                    <input type="hidden" name="id" value="@c.Id" />
+
+                    <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
+                    <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
+                    <input type="hidden" name="Genre" value="@Model.Query.Genre" />
+                    <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
+                    <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
+                    <input type="hidden" name="Language" value="@Model.Query.Language" />
+                    <input type="hidden" name="Edition" value="@Model.Query.Edition" />
+                    <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
+                    @if (Model.Query.SortDescending)
+                    {
+                        <input type="hidden" name="SortDescending" value="true" />
+                    }
+
+                    <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                </form>
+            </td>
         </tr>
     }
     </tbody>
