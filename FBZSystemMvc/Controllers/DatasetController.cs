@@ -24,8 +24,11 @@ public class DatasetController : Controller
     public IActionResult Index([FromQuery] SearchQuery query)
     {
         query ??= new SearchQuery();
+
+        // Run the search (full result set)
         var result = _search.AdvancedSearch(query);
 
+        // Search List (session)
         var ids = _list.GetIds(HttpContext);
         var all = _repo.GetAllComics();
 
@@ -35,10 +38,29 @@ public class DatasetController : Controller
             .Cast<Comic>()
             .ToList();
 
+        // Paging
+        var page = result.Query.Page <= 0 ? 1 : result.Query.Page;
+        var pageSize = result.Query.PageSize <= 0 ? 50 : result.Query.PageSize;
+
+        var total = result.Comics.Count;
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+
+        var paged = result.Comics
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        result.Query.Page = page;
+        result.Query.PageSize = pageSize;
+
         var vm = new DatasetIndexViewModel
         {
             Query = result.Query,
-            Results = result.Comics,
+            Results = paged,
+            TotalResults = total,
+            TotalPages = totalPages,
             SearchList = listComics
         };
 

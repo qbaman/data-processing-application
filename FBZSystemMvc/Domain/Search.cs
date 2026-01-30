@@ -30,6 +30,10 @@ namespace FBZ_System.Domain
 
         // e.g. "None", "Author", "Year"
         public string GroupBy { get; set; } = "None";
+
+        // set number of results per page
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 50;
     }
 
     /// <summary>
