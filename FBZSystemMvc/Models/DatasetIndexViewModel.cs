@@ -6,4 +6,6 @@ public class DatasetIndexViewModel
 {
     public SearchQuery Query { get; set; } = new();
     public List<Comic> Results { get; set; } = new();
+
+    public List<Comic> SearchList { get; set; } = new();
 }

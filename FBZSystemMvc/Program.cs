@@ -28,11 +28,13 @@ builder.Services.AddSingleton<ISearchHistoryService, SearchHistoryService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-builder.Services.AddSingleton<SearchListStore>();
+builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
 
 
 var app = builder.Build();
+app.UseRouting();
 app.UseSession();
+app.UseAuthorization();
 
 
 // Configure the HTTP request pipeline.
