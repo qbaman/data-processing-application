@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FBZ System", "FBZ System.csproj", "{69785F0D-0FAC-4A91-A3DA-7A98E4588758}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FBZSystem.Tests", "..\FBZSystem.Tests\FBZSystem.Tests.csproj", "{E013BA41-B477-4B1E-86D1-BE7214BA2D5B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69785F0D-0FAC-4A91-A3DA-7A98E4588758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69785F0D-0FAC-4A91-A3DA-7A98E4588758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69785F0D-0FAC-4A91-A3DA-7A98E4588758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69785F0D-0FAC-4A91-A3DA-7A98E4588758}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E013BA41-B477-4B1E-86D1-BE7214BA2D5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E013BA41-B477-4B1E-86D1-BE7214BA2D5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E013BA41-B477-4B1E-86D1-BE7214BA2D5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E013BA41-B477-4B1E-86D1-BE7214BA2D5B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0A8148C4-25FF-4ADF-A49D-90AE23C23399}
+	EndGlobalSection
+EndGlobal
