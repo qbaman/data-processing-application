@@ -1,78 +1,135 @@
 # FBZ Encyclopedia  
-A C# WinForms application for loading, searching, filtering, sorting, grouping, and displaying comic data from a CSV dataset. The project is designed around modular services and interfaces, with clear use of SOLID principles throughout the codebase.
+A C# project for loading, searching, filtering, sorting, grouping, and displaying comic data from a CSV dataset.
+
+This repo contains:
+- **WinForms app (Windows-only)** — the original FBZSystem desktop application.
+- **ASP.NET Core MVC app (cross-platform)** — a web-based port in **`/FBZSystemMvc`** that runs locally on macOS/Windows.
+
+---
+
+## 🖼️ Screenshot (ASP.NET Core MVC)
+![Dataset Search (ASP.NET Core MVC)](docs/dataset-search.png)
 
 ---
 
 ## 📘 Overview
-FBZ Encyclopedia provides a lightweight and responsive interface for exploring a comic dataset.  
-All data operations—loading, searching, formatting, and history management—are separated into dedicated classes for maintainability and clarity.  
+FBZ Encyclopedia provides a lightweight and responsive way to explore a comic dataset.
 
-The UI remains clean and simple, while all logic is handled by services and strategy patterns behind the scenes.
+All data operations—loading, searching, formatting, and history/list management—are separated into dedicated classes for maintainability and clarity. The UI stays clean, while the logic is handled by services and strategy patterns behind the scenes.
 
 ---
 
 ## 🔎 Key Features
+### WinForms (Original)
 - CSV data loading using a repository class (`ComicRepositoryCsv`)
-- Powerful search functionality with multiple filters
+- Search functionality with multiple filters
 - Sorting and grouping via plug-in strategy classes
 - Search history tracking with record/clear functionality
 - Consistent display output using a formatter class
-- Completely separated UI, logic, and data layers
-- Full implementation of SOLID principles across services and interfaces
+- Separated UI, logic, and data layers
+- SOLID principles applied across services and interfaces
+
+### ASP.NET Core MVC (New)
+Located in: **`/FBZSystemMvc`**
+
+- Web-based **Dataset Search** page
+- Filters: title, author, genre, year range, language, edition
+- Sorting: title A–Z / Z–A
+- Grouping: none / author / year
+- **Paging + page size** selection (prevents loading huge tables at once)
+- **Session-based Search List** (Add / Remove / Clear)
+- Runs locally on macOS using the .NET SDK (no Visual Studio required)
+
+---
+
+## ▶️ Run Locally (ASP.NET Core MVC)
+### Prerequisites
+- .NET SDK installed (check with `dotnet --version`)
+
+### Steps
+```bash
+cd FBZSystemMvc
+dotnet restore
+dotnet run
+````
+
+Then open the URL shown in the terminal (usually `http://localhost:####`) and go to:
+
+* `/Dataset`
+
+---
+
+## 🪟 Run (WinForms - Windows Only)
+
+The original WinForms app targets Windows. To run it:
+
+* Open the solution on Windows (Visual Studio)
+* Build and run the WinForms project
+
+---
+
+## 📁 Project Structure
+
+* `Data/` — CSV dataset files
+* `Domain/` — domain models / core logic
+* `Repositories/` — data access (CSV repository)
+* `Services/` — search, history/list management, orchestration logic
+* `Strategies/` — sorting and grouping strategies
+* `FBZSystemMvc/` — ASP.NET Core MVC web app (cross-platform)
 
 ---
 
 ## 🧩 SOLID Principles Guide
-This project includes multiple examples of all five SOLID principles.  
+
+This project includes multiple examples of all five SOLID principles.
 Each example is marked directly in the code using `//` comments.
 
 ### **S — Single Responsibility Principle**
-- `ComicRepositoryCsv` — loads and parses CSV data  
-- `SearchService` — search, filter, sort, group logic  
-- `SearchHistoryService` — manages search history  
-- `ComicFormatter` — creates display strings  
-- `Form1` — purely UI behaviour  
+
+* `ComicRepositoryCsv` — loads and parses CSV data
+* `SearchService` — search, filter, sort, group logic
+* `SearchHistoryService` / Search list storage — manages search history / list state
+* `ComicFormatter` — creates display strings
+* UI (WinForms / MVC views) — presentation only
 
 ### **O — Open/Closed Principle**
-- Sorting strategies (`SortTitleAscendingStrategy`, `SortTitleDescendingStrategy`)  
-- Grouping strategies (`GroupByAuthorStrategy`, `GroupByYearStrategy`)  
-- New strategies can be added at any time without editing `SearchService`.
+
+* Sorting strategies (`SortTitleAscendingStrategy`, `SortTitleDescendingStrategy`)
+* Grouping strategies (`GroupByAuthorStrategy`, `GroupByYearStrategy`)
+* New strategies can be added without changing the search engine code.
 
 ### **L — Liskov Substitution Principle**
-- Any `ISortStrategy` works in the search engine  
-- Any `IGroupingStrategy` works with the same calls  
-- The `IComicRepository` could be replaced (CSV → SQL → API)  
+
+* Any `ISortStrategy` works in the search engine
+* Any `IGroupingStrategy` works with the same calls
+* The repository could be replaced (CSV → SQL → API)
 
 ### **I — Interface Segregation Principle**
-- `IComicRepository`  
-- `ISearchService`  
-- `ISearchHistoryService`  
+
+* `IComicRepository`
+* `ISearchService`
+* `ISearchHistoryService` (and other small focused interfaces)
 
 ### **D — Dependency Inversion Principle**
-- `Form1` receives interfaces (`IComicRepository`, `ISearchService`, `ISearchHistoryService`)  
-- `SearchService` depends on arrays of strategy interfaces, not their concrete types  
-- The composition root wires everything together in one place  
+
+* UI depends on abstractions (interfaces), not concrete classes
+* Services depend on strategy interfaces, not implementations
+* Composition/wiring happens in one place
 
 ---
 
 ## 🛠️ Technologies Used
-- C# (.NET)  
-- WinForms  
-- CSV datasets  
-- LINQ  
-- Strategy pattern for sorting and grouping
-- Deedle
+
+* C# (.NET)
+* WinForms
+* ASP.NET Core MVC
+* CSV datasets
+* LINQ
+* Strategy pattern (sorting/grouping)
+* Deedle
 
 ---
 
-## ⚙️ How the System Works
-- The CSV repository loads the entire dataset.  
-- The search service handles filtering, sorting, and grouping through injected strategies.  
-- The search history service records all previous queries.  
-- The formatter prepares clean display strings for the UI.  
-- The form presents results and interacts with the services.
+## 👤 Author
 
----
-
-## 👤 Author  
-**Aman Singh – HND Cloud & AI Computing**
+**Aman – HND Cloud & AI Computing**
