@@ -30,7 +30,7 @@ public class DatasetController : Controller
         // Run the search (full result set)
         var result = _search.AdvancedSearch(query);
 
-        // Search List (session)
+        // Session search list
         var ids = _list.GetIds(HttpContext);
         var all = _repo.GetAllComics().ToList();
 
@@ -46,7 +46,7 @@ public class DatasetController : Controller
 
         var total = result.Comics.Count;
         var totalPages = (int)Math.Ceiling(total / (double)pageSize);
-        if (totalPages == 0) totalPages = 1;
+        if (totalPages < 1) totalPages = 1;
         if (page > totalPages) page = totalPages;
 
         var paged = result.Comics
@@ -64,10 +64,11 @@ public class DatasetController : Controller
             TotalResults = total,
             TotalPages = totalPages,
             SearchList = listComics,
-
-            // Dynamic genre dropdown list (from dataset)
             AllGenres = _repo.GetAllGenres().ToList()
         };
+
+        // Grouping (uses the *paged* results here)
+        vm.GroupedResults = _search.GroupResults(result.Query, paged);
 
         return View(vm);
     }
