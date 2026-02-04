@@ -83,8 +83,8 @@ namespace FBZ_System.Services
         {
             // three focus genres..
             var comics = _repository
-                .GetByGenres()
-                .ToList();
+            .GetAllComics()
+            .ToList();
 
             // Genre
             if (!string.IsNullOrWhiteSpace(query.Genre))
