@@ -1,6 +1,22 @@
+@using System
+@using System.Linq
+@using FBZ_System.Domain
 @model FBZSystemMvc.Models.DatasetIndexViewModel
+
 @{
     ViewData["Title"] = "Dataset Search";
+
+    // Null-safe query object
+    var q = Model.Query ?? new SearchQuery();
+
+    var totalPages = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
+
+    // IMPORTANT: do NOT name this variable "page" (Razor thinks @page is a directive)
+    var pageNumber = q.Page <= 0 ? 1 : q.Page;
+
+    var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
+
+    var allGenres = Model.AllGenres ?? new List<string>();
 }
 
 <h1>Dataset Search</h1>
@@ -8,64 +24,80 @@
 <form method="get" class="row g-3 mb-4">
     <div class="col-md-4">
         <label class="form-label">Title contains</label>
-        <input class="form-control" name="TitleContains" value="@Model.Query.TitleContains" />
+        <input class="form-control" name="TitleContains" value="@(q.TitleContains ?? "")" />
     </div>
 
     <div class="col-md-4">
         <label class="form-label">Author contains</label>
-        <input class="form-control" name="AuthorContains" value="@Model.Query.AuthorContains" />
+        <input class="form-control" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
     </div>
 
-    <select class="form-select" name="Genre">
-    <option value="">All genres</option>
-
-    @foreach (var g in Model.AllGenres)
-    {
-        if (!string.IsNullOrWhiteSpace(Model.Query?.Genre) &&
-            string.Equals(Model.Query.Genre, g, StringComparison.OrdinalIgnoreCase))
-        {
-            <option value="@g" selected="selected">@g</option>
-        }
-        else
-        {
-            <option value="@g">@g</option>
-        }
-    }
-</select>
-
+    <div class="col-md-4">
+        <label class="form-label">Genre</label>
+        <select class="form-select" name="Genre">
+            <option value="">All genres</option>
+            @foreach (var g in allGenres)
+            {
+                if (!string.IsNullOrWhiteSpace(q.Genre) &&
+                    string.Equals(q.Genre, g, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@g" selected="selected">@g</option>
+                }
+                else
+                {
+                    <option value="@g">@g</option>
+                }
+            }
+        </select>
+    </div>
 
     <div class="col-md-2">
         <label class="form-label">Year from</label>
-        <input class="form-control" type="number" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
+        <input class="form-control" type="number" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
     </div>
 
     <div class="col-md-2">
         <label class="form-label">Year to</label>
-        <input class="form-control" type="number" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
+        <input class="form-control" type="number" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
     </div>
 
     <div class="col-md-3">
         <label class="form-label">Language</label>
-        <input class="form-control" name="Language" value="@Model.Query.Language" />
+        <input class="form-control" name="Language" value="@(q.Language ?? "")" />
     </div>
 
     <div class="col-md-3">
         <label class="form-label">Edition</label>
-        <input class="form-control" name="Edition" value="@Model.Query.Edition" />
+        <input class="form-control" name="Edition" value="@(q.Edition ?? "")" />
     </div>
 
     <div class="col-md-2">
         <label class="form-label">Group by</label>
         <select class="form-select" name="GroupBy">
-            <option value="None" selected="@(Model.Query.GroupBy == "None")">None</option>
-            <option value="Author" selected="@(Model.Query.GroupBy == "Author")">Author</option>
-            <option value="Year" selected="@(Model.Query.GroupBy == "Year")">Year</option>
+            @if (string.Equals(q.GroupBy, "Author", StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="None">None</option>
+                <option value="Author" selected="selected">Author</option>
+                <option value="Year">Year</option>
+            }
+            else if (string.Equals(q.GroupBy, "Year", StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="None">None</option>
+                <option value="Author">Author</option>
+                <option value="Year" selected="selected">Year</option>
+            }
+            else
+            {
+                <option value="None" selected="selected">None</option>
+                <option value="Author">Author</option>
+                <option value="Year">Year</option>
+            }
         </select>
     </div>
 
     <div class="col-md-2 d-flex align-items-end">
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="SortDescending" value="true" @(Model.Query.SortDescending ? "checked" : "") />
+            <input class="form-check-input" type="checkbox" name="SortDescending" value="true" @(q.SortDescending ? "checked" : "") />
             <label class="form-check-label">Sort Z–A</label>
         </div>
     </div>
@@ -74,9 +106,24 @@
         <div>
             <label class="form-label">Page size</label>
             <select class="form-select" name="PageSize">
-                <option value="25" selected="@(Model.Query.PageSize == 25)">25</option>
-                <option value="50" selected="@(Model.Query.PageSize == 50)">50</option>
-                <option value="100" selected="@(Model.Query.PageSize == 100)">100</option>
+                @if (pageSize == 25)
+                {
+                    <option value="25" selected="selected">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                }
+                else if (pageSize == 100)
+                {
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100" selected="selected">100</option>
+                }
+                else
+                {
+                    <option value="25">25</option>
+                    <option value="50" selected="selected">50</option>
+                    <option value="100">100</option>
+                }
             </select>
         </div>
     </div>
@@ -90,70 +137,35 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <p class="mb-0">
         <strong>@Model.TotalResults</strong> result(s)
-        — Page <strong>@Model.Query.Page</strong> of <strong>@Model.TotalPages</strong>
+        — Page <strong>@pageNumber</strong> of <strong>@totalPages</strong>
     </p>
 
     <form method="get" class="d-flex gap-2">
-        @* preserve current filters *@
-        <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
-        <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
-        <input type="hidden" name="Genre" value="@Model.Query.Genre" />
-        <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
-        <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
-        <input type="hidden" name="Language" value="@Model.Query.Language" />
-        <input type="hidden" name="Edition" value="@Model.Query.Edition" />
-        <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
-        @if (Model.Query.SortDescending)
+        <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+        <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+        <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+        <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+        <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+        <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+        <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+        <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+        @if (q.SortDescending)
         {
             <input type="hidden" name="SortDescending" value="true" />
         }
-        <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+        <input type="hidden" name="PageSize" value="@pageSize" />
 
-        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Max(1, Model.Query.Page - 1))"
-                @(Model.Query.Page <= 1 ? "disabled" : "")>
+        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Max(1, pageNumber - 1))"
+                @(pageNumber <= 1 ? "disabled" : "")>
             Prev
         </button>
 
-        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Min(Model.TotalPages, Model.Query.Page + 1))"
-                @(Model.Query.Page >= Model.TotalPages ? "disabled" : "")>
+        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Min(totalPages, pageNumber + 1))"
+                @(pageNumber >= totalPages ? "disabled" : "")>
             Next
         </button>
     </form>
 </div>
-
-            <ul class="list-group list-group-flush mt-3">
-                @foreach (var item in Model.SearchList)
-                {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>@item.MainTitle</span>
-
-                        <form method="post" action="/Dataset/RemoveFromList" class="m-0">
-                            <input type="hidden" name="id" value="@item.Id" />
-
-                            @* preserve current filters *@
-                            <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
-                            <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
-                            <input type="hidden" name="Genre" value="@Model.Query.Genre" />
-                            <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
-                            <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
-                            <input type="hidden" name="Language" value="@Model.Query.Language" />
-                            <input type="hidden" name="Edition" value="@Model.Query.Edition" />
-                            <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
-                            @if (Model.Query.SortDescending)
-                            {
-                                <input type="hidden" name="SortDescending" value="true" />
-                            }
-                            <input type="hidden" name="Page" value="@Model.Query.Page" />
-                            <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
-
-                            <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
-                        </form>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
 
 @if (Model.SearchList is not null && Model.SearchList.Count > 0)
 {
@@ -163,20 +175,20 @@
                 <h5 class="card-title mb-0">Search List (@Model.SearchList.Count)</h5>
 
                 <form method="post" action="/Dataset/ClearList" class="m-0">
-                    <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
-                    <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
-                    <input type="hidden" name="Genre" value="@Model.Query.Genre" />
-                    <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
-                    <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
-                    <input type="hidden" name="Language" value="@Model.Query.Language" />
-                    <input type="hidden" name="Edition" value="@Model.Query.Edition" />
-                    <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
-                    @if (Model.Query.SortDescending)
+                    <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                    <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                    <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                    <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                    <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                    <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                    <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                    <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                    @if (q.SortDescending)
                     {
                         <input type="hidden" name="SortDescending" value="true" />
                     }
-                    <input type="hidden" name="Page" value="@Model.Query.Page" />
-                    <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+                    <input type="hidden" name="Page" value="@pageNumber" />
+                    <input type="hidden" name="PageSize" value="@pageSize" />
 
                     <button class="btn btn-sm btn-outline-danger" type="submit">Clear</button>
                 </form>
@@ -191,20 +203,20 @@
                         <form method="post" action="/Dataset/RemoveFromList" class="m-0">
                             <input type="hidden" name="id" value="@item.Id" />
 
-                            <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
-                            <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
-                            <input type="hidden" name="Genre" value="@Model.Query.Genre" />
-                            <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
-                            <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
-                            <input type="hidden" name="Language" value="@Model.Query.Language" />
-                            <input type="hidden" name="Edition" value="@Model.Query.Edition" />
-                            <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
-                            @if (Model.Query.SortDescending)
+                            <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                            <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                            <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                            <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                            <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                            <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                            <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                            <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                            @if (q.SortDescending)
                             {
                                 <input type="hidden" name="SortDescending" value="true" />
                             }
-                            <input type="hidden" name="Page" value="@Model.Query.Page" />
-                            <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+                            <input type="hidden" name="Page" value="@pageNumber" />
+                            <input type="hidden" name="PageSize" value="@pageSize" />
 
                             <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
                         </form>
@@ -214,7 +226,6 @@
         </div>
     </div>
 }
-
 
 <table class="table table-sm table-striped align-middle">
     <thead>
@@ -228,38 +239,37 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (var c in Model.Results)
-    {
-        <tr>
-            <td>@c.MainTitle</td>
-            <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
-            <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
-            <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
-            <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
-            <td class="text-end">
-                <form method="post" action="/Dataset/AddToList" style="display:inline">
-                    <input type="hidden" name="id" value="@c.Id" />
+        @foreach (var c in Model.Results)
+        {
+            <tr>
+                <td>@c.MainTitle</td>
+                <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+                <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+                <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+                <td class="text-end">
+                    <form method="post" action="/Dataset/AddToList" style="display:inline">
+                        <input type="hidden" name="id" value="@c.Id" />
 
-                    @* preserve current filters *@
-                    <input type="hidden" name="TitleContains" value="@Model.Query.TitleContains" />
-                    <input type="hidden" name="AuthorContains" value="@Model.Query.AuthorContains" />
-                    <input type="hidden" name="Genre" value="@Model.Query.Genre" />
-                    <input type="hidden" name="YearFrom" value="@(Model.Query.YearFrom?.ToString() ?? "")" />
-                    <input type="hidden" name="YearTo" value="@(Model.Query.YearTo?.ToString() ?? "")" />
-                    <input type="hidden" name="Language" value="@Model.Query.Language" />
-                    <input type="hidden" name="Edition" value="@Model.Query.Edition" />
-                    <input type="hidden" name="GroupBy" value="@Model.Query.GroupBy" />
-                    @if (Model.Query.SortDescending)
-                    {
-                        <input type="hidden" name="SortDescending" value="true" />
-                    }
-                    <input type="hidden" name="Page" value="@Model.Query.Page" />
-                    <input type="hidden" name="PageSize" value="@Model.Query.PageSize" />
+                        <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                        <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                        <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                        <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                        <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                        <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                        <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                        <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                        @if (q.SortDescending)
+                        {
+                            <input type="hidden" name="SortDescending" value="true" />
+                        }
+                        <input type="hidden" name="Page" value="@pageNumber" />
+                        <input type="hidden" name="PageSize" value="@pageSize" />
 
-                    <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
-                </form>
-            </td>
-        </tr>
-    }
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                    </form>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
