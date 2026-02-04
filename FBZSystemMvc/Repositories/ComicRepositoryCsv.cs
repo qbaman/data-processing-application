@@ -7,20 +7,9 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Repositories
 {
-    public class ComicRepositoryCsv : IComicRepository // THIS ONLY LOADS CSV FROM COMIC, SINGLE RESPONSIBILITY.
+    public class ComicRepositoryCsv : IComicRepository
     {
         private readonly List<Comic> _comics = new();
-
-        public IEnumerable<string> GetAllGenres()
-        {
-            return _comics
-                .SelectMany(c => c.Genres ?? Enumerable.Empty<string>())
-                .Select(g => g.Trim())
-                .Where(g => !string.IsNullOrWhiteSpace(g))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(g => g);
-        }
-
 
         public ComicRepositoryCsv(string csvFolderPath)
         {
@@ -47,16 +36,21 @@ namespace FBZ_System.Repositories
                 string yearText = GetString(row, "Date of publication");
                 string edition = GetString(row, "Edition");
 
+                // Extra metadata fields (for key:value display)
+                string typeOfResource = GetString(row, "Type of resource");
+                string contentType = GetString(row, "Content type");
+                string materialType = GetString(row, "Material type");
+                string physicalDescription = GetString(row, "Physical description");
+                string dewey = GetString(row, "Dewey classification");
+                string topics = GetString(row, "Topics");
+
                 // skip empty rows
                 if (string.IsNullOrWhiteSpace(id) && string.IsNullOrWhiteSpace(title))
                     continue;
 
                 if (!comicsById.TryGetValue(id, out var comic))
                 {
-                    comic = new Comic
-                    {
-                        Id = id
-                    };
+                    comic = new Comic { Id = id };
                     comicsById[id] = comic;
                 }
 
@@ -64,13 +58,9 @@ namespace FBZ_System.Repositories
                 if (!string.IsNullOrWhiteSpace(title))
                 {
                     if (string.IsNullOrWhiteSpace(comic.MainTitle))
-                    {
                         comic.MainTitle = title;
-                    }
                     else
-                    {
                         AddUnique(comic.VariantTitles, title);
-                    }
                 }
 
                 AddMultiValue(comic.VariantTitles, variantTitle);
@@ -92,21 +82,25 @@ namespace FBZ_System.Repositories
 
                 // Year
                 if (int.TryParse(yearText, out int year))
-                {
                     AddUnique(comic.Years, year);
-                }
 
                 // ISBN
                 AddMultiValue(comic.Isbns, isbn);
+
+                // Extra attributes (semicolon-separated, often contains "Key: Value" parts)
+                AddExtra(comic, "Type of resource", typeOfResource);
+                AddExtra(comic, "Content type", contentType);
+                AddExtra(comic, "Material type", materialType);
+                AddExtra(comic, "Physical description", physicalDescription);
+                AddExtra(comic, "Dewey classification", dewey);
+                AddExtra(comic, "Topics", topics);
             }
 
             foreach (var c in comicsById.Values)
             {
                 // if no isbn mark "missing"
                 if (c.Isbns.Count == 0)
-                {
                     c.Isbns.Add("missing");
-                }
 
                 _comics.Add(c);
             }
@@ -118,19 +112,29 @@ namespace FBZ_System.Repositories
         // Return comics that have one of the specified genres
         public IReadOnlyList<Comic> GetByGenres(IEnumerable<string> genres)
         {
-            var genreSet = new HashSet<string>(genres ?? Array.Empty<string>(),
-                                               StringComparer.OrdinalIgnoreCase);
+            var genreSet = new HashSet<string>(genres ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
 
             if (genreSet.Count == 0)
                 return _comics.ToList();
 
             return _comics
-                .Where(c => c.Genres != null &&
-                            c.Genres.Any(g => genreSet.Contains(g)))
+                .Where(c => c.Genres != null && c.Genres.Any(g => genreSet.Contains(g)))
                 .ToList();
         }
 
-        //  helpers 
+        // REQUIRED by your interface (this fixes your build error)
+        public IEnumerable<string> GetAllGenres()
+        {
+            return _comics
+                .SelectMany(c => c.Genres ?? new List<string>())
+                .Where(g => !string.IsNullOrWhiteSpace(g))
+                .Select(g => g.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g)
+                .ToList();
+        }
+
+        // helpers
 
         private static string GetString(Series<string, object> row, string column)
         {
@@ -159,9 +163,7 @@ namespace FBZ_System.Repositories
                 return;
 
             if (!target.Exists(x => string.Equals(x, value, StringComparison.OrdinalIgnoreCase)))
-            {
                 target.Add(value);
-            }
         }
 
         private static void AddUnique(List<int> target, int value)
@@ -173,12 +175,13 @@ namespace FBZ_System.Repositories
                 target.Add(value);
         }
 
+        // NOTE: split ONLY by semicolon to avoid breaking values containing commas (e.g., names)
         private static void AddMultiValue(List<string> target, string raw)
         {
             if (target == null || string.IsNullOrWhiteSpace(raw))
                 return;
 
-            foreach (var part in raw.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var part in raw.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var trimmed = part.Trim();
                 if (trimmed.Length == 0)
@@ -186,6 +189,29 @@ namespace FBZ_System.Repositories
 
                 if (!target.Exists(x => string.Equals(x, trimmed, StringComparison.OrdinalIgnoreCase)))
                     target.Add(trimmed);
+            }
+        }
+
+        // ExtraAttributes: split ONLY by semicolon (preserve commas), keep "Key: Value" parts as-is
+        private static void AddExtra(Comic comic, string key, string raw)
+        {
+            if (comic == null || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(raw))
+                return;
+
+            if (!comic.ExtraAttributes.TryGetValue(key, out var list))
+            {
+                list = new List<string>();
+                comic.ExtraAttributes[key] = list;
+            }
+
+            foreach (var part in raw.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = part.Trim();
+                if (trimmed.Length == 0)
+                    continue;
+
+                if (!list.Exists(x => string.Equals(x, trimmed, StringComparison.OrdinalIgnoreCase)))
+                    list.Add(trimmed);
             }
         }
     }
