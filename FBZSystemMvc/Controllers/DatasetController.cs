@@ -92,4 +92,11 @@ public class DatasetController : Controller
         _list.Clear(HttpContext);
         return RedirectToAction(nameof(Index), query);
     }
+
+    [HttpGet]
+    public IActionResult Exit()
+    {
+        _list.Clear(HttpContext);
+        return RedirectToAction("Index", "Home");
+    }
 }
