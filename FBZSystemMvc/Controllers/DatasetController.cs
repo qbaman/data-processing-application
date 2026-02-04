@@ -95,6 +95,30 @@ public class DatasetController : Controller
     }
 
     [HttpGet]
+
+    [HttpGet]
+    public IActionResult Details(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return RedirectToAction(nameof(Index));
+
+        var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
+        if (comic is null)
+            return RedirectToAction(nameof(Index));
+
+        var vm = new ComicDetailsViewModel
+        {
+            Comic = comic,
+            AuthorsDisplay = comic.Authors?.Distinct().OrderBy(a => a).ToList() ?? new(),
+            GenresDisplay = comic.Genres?.Distinct().OrderBy(g => g).ToList() ?? new(),
+            YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new(),
+            IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
+        };
+
+        return View(vm);
+    }
+
+
     public IActionResult Exit()
     {
         _list.Clear(HttpContext);

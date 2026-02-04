@@ -228,49 +228,131 @@
     </div>
 }
 
-<table class="table table-sm table-striped align-middle">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Authors</th>
-            <th>Years</th>
-            <th>Genres</th>
-            <th>ISBNs</th>
-            <th class="text-end">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var c in Model.Results)
-        {
-            <tr>
-                <td>@c.MainTitle</td>
-                <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
-                <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
-                <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
-                <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
-                <td class="text-end">
-                    <form method="post" action="/Dataset/AddToList" style="display:inline">
-                        <input type="hidden" name="id" value="@c.Id" />
-
-                        <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
-                        <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
-                        <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
-                        <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
-                        <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
-                        <input type="hidden" name="Language" value="@(q.Language ?? "")" />
-                        <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
-                        <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
-                        @if (q.SortDescending)
-                        {
-                            <input type="hidden" name="SortDescending" value="true" />
-                        }
-                        <input type="hidden" name="Page" value="@pageNumber" />
-                        <input type="hidden" name="PageSize" value="@pageSize" />
-
-                        <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
-                    </form>
-                </td>
-            </tr>
+@if (Model.GroupedResults is not null && Model.GroupedResults.Count > 0)
+{
+    <div class="accordion" id="groupedResultsAccordion">
+        @{
+            var groupIndex = 0;
         }
-    </tbody>
-</table>
+
+        @foreach (var group in Model.GroupedResults.OrderBy(g => g.Key))
+        {
+            var headingId = $"heading-{groupIndex}";
+            var collapseId = $"collapse-{groupIndex}";
+            groupIndex++;
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="@headingId">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#@collapseId"
+                            aria-expanded="false" aria-controls="@collapseId">
+                        @group.Key (@group.Value.Count)
+                    </button>
+                </h2>
+
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId"
+                     data-bs-parent="#groupedResultsAccordion">
+                    <div class="accordion-body p-0">
+                        <table class="table table-sm table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Authors</th>
+                                    <th>Years</th>
+                                    <th>Genres</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in group.Value)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a>
+                                        </td>
+                                        <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+                                        <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+                                        <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                                        <td class="text-end">
+                                            <form method="post" action="/Dataset/AddToList" style="display:inline">
+                                                <input type="hidden" name="id" value="@c.Id" />
+
+                                                <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                                                <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                                                <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                                <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                                                <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                                                <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                                                <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                                                <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                                                @if (q.SortDescending)
+                                                {
+                                                    <input type="hidden" name="SortDescending" value="true" />
+                                                }
+                                                <input type="hidden" name="Page" value="@pageNumber" />
+                                                <input type="hidden" name="PageSize" value="@pageSize" />
+
+                                                <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <table class="table table-sm table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Authors</th>
+                <th>Years</th>
+                <th>Genres</th>
+                <th>ISBNs</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.Results)
+            {
+                <tr>
+                    <td>
+                        <a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a>
+                    </td>
+                    <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+                    <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+                    <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                    <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+                    <td class="text-end">
+                        <form method="post" action="/Dataset/AddToList" style="display:inline">
+                            <input type="hidden" name="id" value="@c.Id" />
+
+                            <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                            <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                            <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                            <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                            <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                            <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                            <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                            <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                            @if (q.SortDescending)
+                            {
+                                <input type="hidden" name="SortDescending" value="true" />
+                            }
+                            <input type="hidden" name="Page" value="@pageNumber" />
+                            <input type="hidden" name="PageSize" value="@pageSize" />
+
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
