@@ -13,12 +13,7 @@ namespace FBZ_System.Services
         private readonly IDictionary<string, IGroupingStrategy> _groupingStrategies;
         private readonly IDictionary<string, ISortStrategy> _sortStrategies;
 
-        private static readonly string[] FocusGenres =
-        {
-            "Fantasy",
-            "Horror",
-            "Science fiction"
-        };
+
 
         public SearchService(
             IComicRepository repository,
@@ -86,9 +81,9 @@ namespace FBZ_System.Services
 
         private List<Comic> FilterBase(SearchQuery query)
         {
-            // three focus genres.
+            // three focus genres..
             var comics = _repository
-                .GetByGenres(FocusGenres)
+                .GetByGenres()
                 .ToList();
 
             // Genre
