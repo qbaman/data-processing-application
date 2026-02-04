@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using FBZ_System.Domain;
 using FBZ_System.Services;
@@ -30,7 +32,7 @@ public class DatasetController : Controller
 
         // Search List (session)
         var ids = _list.GetIds(HttpContext);
-        var all = _repo.GetAllComics();
+        var all = _repo.GetAllComics().ToList();
 
         var listComics = ids
             .Select(id => all.FirstOrDefault(c => c.Id == id))
@@ -61,7 +63,10 @@ public class DatasetController : Controller
             Results = paged,
             TotalResults = total,
             TotalPages = totalPages,
-            SearchList = listComics
+            SearchList = listComics,
+
+            // Dynamic genre dropdown list (from dataset)
+            AllGenres = _repo.GetAllGenres().ToList()
         };
 
         return View(vm);

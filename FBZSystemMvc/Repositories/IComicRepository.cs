@@ -8,6 +8,8 @@ namespace FBZ_System.Repositories
         //  read-only lists of Comic
         IReadOnlyList<Comic> GetAllComics();
 
+        IEnumerable<string> GetAllGenres();
+
         IReadOnlyList<Comic> GetByGenres(IEnumerable<string> genres);
     }
 }

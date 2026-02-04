@@ -16,10 +16,23 @@
         <input class="form-control" name="AuthorContains" value="@Model.Query.AuthorContains" />
     </div>
 
-    <div class="col-md-4">
-        <label class="form-label">Genre</label>
-        <input class="form-control" name="Genre" value="@Model.Query.Genre" />
-    </div>
+    <select class="form-select" name="Genre">
+    <option value="">All genres</option>
+
+    @foreach (var g in Model.AllGenres)
+    {
+        if (!string.IsNullOrWhiteSpace(Model.Query?.Genre) &&
+            string.Equals(Model.Query.Genre, g, StringComparison.OrdinalIgnoreCase))
+        {
+            <option value="@g" selected="selected">@g</option>
+        }
+        else
+        {
+            <option value="@g">@g</option>
+        }
+    }
+</select>
+
 
     <div class="col-md-2">
         <label class="form-label">Year from</label>

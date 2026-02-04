@@ -11,6 +11,17 @@ namespace FBZ_System.Repositories
     {
         private readonly List<Comic> _comics = new();
 
+        public IEnumerable<string> GetAllGenres()
+        {
+            return _comics
+                .SelectMany(c => c.Genres ?? Enumerable.Empty<string>())
+                .Select(g => g.Trim())
+                .Where(g => !string.IsNullOrWhiteSpace(g))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g);
+        }
+
+
         public ComicRepositoryCsv(string csvFolderPath)
         {
             var filePath = Path.Combine(csvFolderPath, "names.csv");
