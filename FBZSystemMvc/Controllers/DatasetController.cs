@@ -97,7 +97,11 @@ public class DatasetController : Controller
         return RedirectToAction(nameof(Index), query);
     }
 
-    [HttpGet]
+    public IActionResult Finish()
+    {
+        _list.Clear(HttpContext);           // clears the session search list
+        return RedirectToAction("Index", "Home");
+    }
 
     [HttpGet]
     public IActionResult Details(string id)
