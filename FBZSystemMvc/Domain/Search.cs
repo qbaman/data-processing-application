@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace FBZ_System.Domain
 {
-    /// <summary>
-    /// What the user is asking for in a search.
-    /// </summary>
     public class SearchQuery
     {
         // Basic filters
