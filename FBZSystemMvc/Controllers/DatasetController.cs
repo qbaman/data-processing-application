@@ -7,6 +7,7 @@ using FBZ_System.Repositories;
 using FBZSystemMvc.Models;
 using FBZSystemMvc.Services;
 
+
 namespace FBZSystemMvc.Controllers;
 
 public class DatasetController : Controller
@@ -14,12 +15,14 @@ public class DatasetController : Controller
     private readonly ISearchService _search;
     private readonly IComicRepository _repo;
     private readonly SearchListStore _list;
+    private readonly ComicFormatter _formatter;
 
-    public DatasetController(ISearchService search, IComicRepository repo, SearchListStore list)
+    public DatasetController(ISearchService search, IComicRepository repo, SearchListStore list, ComicFormatter formatter)
     {
         _search = search;
         _repo = repo;
         _list = list;
+        _formatter = formatter;
     }
 
     [HttpGet]
@@ -114,6 +117,14 @@ public class DatasetController : Controller
             YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new(),
             IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
         };
+
+        vm.InfoLines = _formatter.BuildInfoLines(comic);
+
+        vm.InfoLines = comic.ExtraAttributes
+            .OrderBy(kvp => kvp.Key)
+            .SelectMany(kvp => (kvp.Value ?? new List<string>()).Select(v => $"{kvp.Key}: {v}"))
+            .ToList();
+
 
         return View(vm);
     }
