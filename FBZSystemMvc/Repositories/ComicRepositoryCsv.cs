@@ -134,6 +134,17 @@ namespace FBZ_System.Repositories
                 .ToList();
         }
 
+        public IEnumerable<string> GetAllNameTypes()
+        {
+            return GetAllComics()
+                .SelectMany(c => c.NameTypes ?? new List<string>())
+                .Select(x => x?.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         // helpers
 
         private static string GetString(Series<string, object> row, string column)

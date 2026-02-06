@@ -12,15 +12,13 @@
 
     var totalPages = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
 
-    // IMPORTANT: do NOT name this variable "page" (Razor thinks @page is a directive)
+    // IMPORTANT: do NOT name this variable "page"
     var pageNumber = q.Page <= 0 ? 1 : q.Page;
 
     var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
 
     var allGenres = Model.AllGenres ?? new List<string>();
-
-    // Null-safe metadata preview map
-    var previews = Model.MetadataPreviewById ?? new Dictionary<string, string>();
+    var allNameTypes = Model.AllNameTypes ?? new List<string>();
 }
 
 <h1>Dataset Search</h1>
@@ -50,6 +48,25 @@
                 else
                 {
                     <option value="@g">@g</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Name type</label>
+        <select class="form-select" name="NameType">
+            <option value="">Any</option>
+            @foreach (var nt in allNameTypes)
+            {
+                if (!string.IsNullOrWhiteSpace(q.NameType) &&
+                    string.Equals(q.NameType, nt, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@nt" selected="selected">@nt</option>
+                }
+                else
+                {
+                    <option value="@nt">@nt</option>
                 }
             }
         </select>
@@ -149,6 +166,7 @@
         <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
         <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
         <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+        <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
         <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
         <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
         <input type="hidden" name="Language" value="@(q.Language ?? "")" />
@@ -183,6 +201,7 @@
                     <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
                     <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
                     <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                    <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
                     <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
                     <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
                     <input type="hidden" name="Language" value="@(q.Language ?? "")" />
@@ -211,6 +230,7 @@
                             <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
                             <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
                             <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                            <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
                             <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
                             <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
                             <input type="hidden" name="Language" value="@(q.Language ?? "")" />
@@ -264,7 +284,6 @@
                                     <th>Authors</th>
                                     <th>Years</th>
                                     <th>Genres</th>
-                                    <th>Metadata</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
@@ -272,34 +291,25 @@
                                 @foreach (var c in group.Value)
                                 {
                                     <tr>
-                                        <td>
-                                            <a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a>
-                                        </td>
+                                        <td><a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a></td>
                                         <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
                                         <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
                                         <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
-                                        <td class="small text-muted">
-                                            @(previews.TryGetValue(c.Id, out var previewG) ? previewG : "")
-                                        </td>
                                         <td class="text-end">
                                             <form method="post" action="/Dataset/AddToList" style="display:inline">
                                                 <input type="hidden" name="id" value="@c.Id" />
-
                                                 <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
                                                 <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
                                                 <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                                <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
                                                 <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
                                                 <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
                                                 <input type="hidden" name="Language" value="@(q.Language ?? "")" />
                                                 <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                                                 <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
-                                                @if (q.SortDescending)
-                                                {
-                                                    <input type="hidden" name="SortDescending" value="true" />
-                                                }
+                                                @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                                                 <input type="hidden" name="Page" value="@pageNumber" />
                                                 <input type="hidden" name="PageSize" value="@pageSize" />
-
                                                 <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
                                             </form>
                                         </td>
@@ -323,43 +333,33 @@ else
                 <th>Years</th>
                 <th>Genres</th>
                 <th>ISBNs</th>
-                <th>Metadata</th>
                 <th class="text-end">Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var c in Model.Results)
+            @foreach (var c in Model.Results ?? new List<Comic>())
             {
                 <tr>
-                    <td>
-                        <a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a>
-                    </td>
+                    <td><a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a></td>
                     <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
                     <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
                     <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
                     <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
-                    <td class="small text-muted">
-                        @(previews.TryGetValue(c.Id, out var preview) ? preview : "")
-                    </td>
                     <td class="text-end">
                         <form method="post" action="/Dataset/AddToList" style="display:inline">
                             <input type="hidden" name="id" value="@c.Id" />
-
                             <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
                             <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
                             <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                            <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
                             <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
                             <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
                             <input type="hidden" name="Language" value="@(q.Language ?? "")" />
                             <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                             <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
-                            @if (q.SortDescending)
-                            {
-                                <input type="hidden" name="SortDescending" value="true" />
-                            }
+                            @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                             <input type="hidden" name="Page" value="@pageNumber" />
                             <input type="hidden" name="PageSize" value="@pageSize" />
-
                             <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
                         </form>
                     </td>

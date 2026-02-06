@@ -41,6 +41,68 @@ namespace FBZ_System.Services
             return FormatMulti("Genre", comic?.Genres);
         }
 
+        public List<string> BuildInfoLines(Comic comic)
+        {
+            var lines = new List<string>();
+            if (comic == null) return lines;
+
+            AddMultiLine(lines, "Variant titles", comic.VariantTitles);
+            AddMultiLine(lines, "Languages", comic.Languages);
+            AddMultiLine(lines, "Editions", comic.Editions);
+            AddMultiLine(lines, "Name types", comic.NameTypes);
+
+            if (comic.ExtraAttributes != null && comic.ExtraAttributes.Count > 0)
+            {
+                foreach (var entry in comic.ExtraAttributes.OrderBy(e => e.Key))
+                {
+                    var label = Clean(entry.Key);
+
+                    foreach (var raw in entry.Value ?? new List<string>())
+                    {
+                        if (string.IsNullOrWhiteSpace(raw)) continue;
+
+                        lines.Add($"{label}: {NormalizeKeyValue(raw)}");
+                    }
+                }
+            }
+
+            return lines;
+        }
+
+        private void AddMultiLine(List<string> lines, string label, IEnumerable<string>? values)
+        {
+            if (values == null) return;
+
+            var list = values
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(Clean)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (list.Count == 0) return;
+
+            // one line per value (kiosk-friendly)
+            foreach (var v in list)
+                lines.Add($"{label}: {v}");
+        }
+
+        private string NormalizeKeyValue(string raw)
+        {
+            raw = Clean(raw);
+
+            var idx = raw.IndexOf(':');
+            if (idx < 0) return raw;
+
+            var k = raw.Substring(0, idx).Trim();
+            var v = raw.Substring(idx + 1).Trim();
+
+            if (k.Length == 0) return raw;
+            if (v.Length == 0) return $"{k}:";
+
+            return $"{k}: {v}";
+        }
+
+
         public string FormatIsbns(Comic comic)
         {
             if (comic?.Isbns == null || comic.Isbns.Count == 0)

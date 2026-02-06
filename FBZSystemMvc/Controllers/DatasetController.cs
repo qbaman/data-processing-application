@@ -73,6 +73,8 @@ public class DatasetController : Controller
         // Grouping (uses the *paged* results here)
         vm.GroupedResults = _search.GroupResults(result.Query, paged);
 
+        vm.AllNameTypes = _repo.GetAllNameTypes().ToList();
+
         return View(vm);
     }
 
@@ -118,7 +120,7 @@ public class DatasetController : Controller
             Comic = comic,
             AuthorsDisplay = comic.Authors?.Distinct().OrderBy(a => a).ToList() ?? new(),
             GenresDisplay = comic.Genres?.Distinct().OrderBy(g => g).ToList() ?? new(),
-            YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new(),
+            YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new List<int>(),
             IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
         };
 
@@ -129,32 +131,10 @@ public class DatasetController : Controller
             .SelectMany(kvp => (kvp.Value ?? new List<string>()).Select(v => $"{kvp.Key}: {v}"))
             .ToList();
 
-        vm.MetadataPreviewById = (vm.Results ?? new List<FBZ_System.Domain.Comic>())
-            .ToDictionary(
-                c => c.Id,
-                c =>
-                {
-                    //few keys to preview (keep it short for kiosk)
-                    var keys = new[] { "Topics", "Physical description", "Type of resource" };
-
-                    var parts = new List<string>();
-                    foreach (var k in keys)
-                    {
-                        if (c.ExtraAttributes != null &&
-                            c.ExtraAttributes.TryGetValue(k, out var vals) &&
-                            vals != null && vals.Count > 0)
-                        {
-                            parts.Add($"{k}: {vals[0]}");
-                        }
-                    }
-
-                    return string.Join(" • ", parts);
-                }
-            );
-
 
         return View(vm);
     }
+
 
 
     public IActionResult Exit()
