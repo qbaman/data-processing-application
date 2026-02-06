@@ -1,5 +1,6 @@
 @using System
 @using System.Linq
+@using System.Collections.Generic
 @using FBZ_System.Domain
 @model FBZSystemMvc.Models.DatasetIndexViewModel
 
@@ -17,6 +18,9 @@
     var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
 
     var allGenres = Model.AllGenres ?? new List<string>();
+
+    // Null-safe metadata preview map
+    var previews = Model.MetadataPreviewById ?? new Dictionary<string, string>();
 }
 
 <h1>Dataset Search</h1>
@@ -131,7 +135,7 @@
     <div class="col-12">
         <button class="btn btn-primary" type="submit">Search</button>
         <a class="btn btn-outline-secondary" href="/Dataset?Page=1&PageSize=50">Reset</a>
-    <a class="btn btn-outline-danger" href="/Dataset/Exit">Finish / Exit</a>
+        <a class="btn btn-outline-danger" href="/Dataset/Exit">Finish / Exit</a>
     </div>
 </form>
 
@@ -260,6 +264,7 @@
                                     <th>Authors</th>
                                     <th>Years</th>
                                     <th>Genres</th>
+                                    <th>Metadata</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
@@ -273,6 +278,9 @@
                                         <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
                                         <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
                                         <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                                        <td class="small text-muted">
+                                            @(previews.TryGetValue(c.Id, out var previewG) ? previewG : "")
+                                        </td>
                                         <td class="text-end">
                                             <form method="post" action="/Dataset/AddToList" style="display:inline">
                                                 <input type="hidden" name="id" value="@c.Id" />
@@ -315,6 +323,7 @@ else
                 <th>Years</th>
                 <th>Genres</th>
                 <th>ISBNs</th>
+                <th>Metadata</th>
                 <th class="text-end">Actions</th>
             </tr>
         </thead>
@@ -329,6 +338,9 @@ else
                     <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
                     <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
                     <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+                    <td class="small text-muted">
+                        @(previews.TryGetValue(c.Id, out var preview) ? preview : "")
+                    </td>
                     <td class="text-end">
                         <form method="post" action="/Dataset/AddToList" style="display:inline">
                             <input type="hidden" name="id" value="@c.Id" />
