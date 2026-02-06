@@ -67,7 +67,8 @@ public class DatasetController : Controller
             TotalResults = total,
             TotalPages = totalPages,
             SearchList = listComics,
-            AllGenres = _repo.GetAllGenres().ToList()
+            AllGenres = _repo.GetAllGenres().ToList(),
+            AllLanguages = _repo.GetAllLanguages().ToList(),
         };
 
         // Grouping (uses the *paged* results here)

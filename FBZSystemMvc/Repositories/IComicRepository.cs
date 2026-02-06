@@ -12,6 +12,9 @@ namespace FBZ_System.Repositories
 
         IEnumerable<string> GetAllNameTypes();
 
+        IEnumerable<string> GetAllLanguages();
+
+
         IReadOnlyList<Comic> GetByGenres(IEnumerable<string> genres);
     }
 }

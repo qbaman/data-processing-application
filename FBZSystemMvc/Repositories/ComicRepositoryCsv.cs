@@ -177,6 +177,17 @@ namespace FBZ_System.Repositories
                 target.Add(value);
         }
 
+        public IEnumerable<string> GetAllLanguages()
+        {
+            return GetAllComics()
+                .SelectMany(c => c.Languages ?? new List<string>())
+                .Select(x => x?.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         private static void AddUnique(List<int> target, int value)
         {
             if (target == null)

@@ -16,6 +16,9 @@ public class DatasetIndexViewModel
 
     public List<string> AllGenres { get; set; } = new();
 
+    public List<string> AllLanguages { get; set; } = new();
+
+
     public List<string> AllNameTypes { get; set; } = new();
 
     public IDictionary<string, List<Comic>> GroupedResults { get; set; }
