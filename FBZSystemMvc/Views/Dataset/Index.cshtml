@@ -14,6 +14,8 @@
 
     var allLanguages = Model.AllLanguages ?? new List<string>();
 
+    var allEditions = Model.AllEditions ?? new List<string>();
+
     // IMPORTANT: do NOT name this variable "page"
     var pageNumber = q.Page <= 0 ? 1 : q.Page;
 
@@ -86,13 +88,43 @@
 
     <div class="col-md-3">
         <label class="form-label">Language</label>
-        <input class="form-control" name="Language" value="@(q.Language ?? "")" />
+        <select class="form-select" name="Language">
+            <option value="">Any</option>
+            @foreach (var lang in allLanguages)
+            {
+                if (!string.IsNullOrWhiteSpace(q.Language) &&
+                    string.Equals(q.Language, lang, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@lang" selected="selected">@lang</option>
+                }
+                else
+                {
+                    <option value="@lang">@lang</option>
+                }
+            }
+    </select>
+</div>
+
+
+        <div class="col-md-3">
+        <label class="form-label">Edition</label>
+        <select class="form-select" name="Edition">
+            <option value="">Any</option>
+            @foreach (var ed in allEditions)
+            {
+                if (!string.IsNullOrWhiteSpace(q.Edition) &&
+                    string.Equals(q.Edition, ed, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@ed" selected="selected">@ed</option>
+                }
+                else
+                {
+                    <option value="@ed">@ed</option>
+                }
+            }
+        </select>
     </div>
 
-    <div class="col-md-3">
-        <label class="form-label">Edition</label>
-        <input class="form-control" name="Edition" value="@(q.Edition ?? "")" />
-    </div>
 
     <div class="col-md-2">
         <label class="form-label">Group by</label>

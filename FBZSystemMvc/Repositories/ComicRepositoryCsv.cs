@@ -138,7 +138,7 @@ namespace FBZ_System.Repositories
         {
             return GetAllComics()
                 .SelectMany(c => c.NameTypes ?? new List<string>())
-                .Select(x => x?.Trim())
+                .Select(x => (x ?? "").Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(x => x)
@@ -181,8 +181,19 @@ namespace FBZ_System.Repositories
         {
             return GetAllComics()
                 .SelectMany(c => c.Languages ?? new List<string>())
-                .Select(x => x?.Trim())
+                .Select(x => (x ?? "").Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+        }
+
+        public IEnumerable<string> GetAllEditions()
+        {
+            return GetAllComics()
+                .SelectMany(c => c.Editions ?? new List<string>())
+                .Select(x => (x ?? "").Trim())
+                .Where(x => x.Length > 0)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(x => x)
                 .ToList();
