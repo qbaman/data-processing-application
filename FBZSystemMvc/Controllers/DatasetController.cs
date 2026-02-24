@@ -73,6 +73,7 @@ public class DatasetController : Controller
             AllEditions = _repo.GetAllEditions().ToList(),
             AllResourceTypes = _repo.GetAllResourceTypes().ToList(),
             AllTopics = _repo.GetAllTopics().ToList(),
+            AllContentTypes = _repo.GetAllContentTypes().ToList(),
         };
 
         // Grouping (uses the *paged* results here)

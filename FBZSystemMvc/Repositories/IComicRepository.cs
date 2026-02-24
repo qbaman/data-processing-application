@@ -11,7 +11,7 @@ namespace FBZ_System.Repositories
         IEnumerable<string> GetAllGenres();
 
         IEnumerable<string> GetAllNameTypes();
-        
+
         IEnumerable<string> GetAllPhysicalDescriptions();
 
         IEnumerable<string> GetAllResourceTypes();
@@ -22,6 +22,8 @@ namespace FBZ_System.Repositories
 
         IEnumerable<string> GetAllTopics(); 
         
+        IEnumerable<string> GetAllContentTypes();
+
         IReadOnlyList<Comic> GetByGenres(IEnumerable<string> genres);
     }
 }

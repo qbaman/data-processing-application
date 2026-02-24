@@ -10,7 +10,7 @@ public class DatasetIndexViewModel
     public List<Comic> Results { get; set; } = new();
 
     public List<string> AllPhysicalDescriptions { get; set; } = new();
-    
+
     public List<Comic> SearchList { get; set; } = new();
 
     public int TotalResults { get; set; }
@@ -24,8 +24,9 @@ public class DatasetIndexViewModel
 
     public List<string> AllTopics { get; set; } = new();
 
-    public List<string> AllResourceTypes { get; set; } = new();
+    public List<string> AllContentTypes { get; set; } = new();
 
+    public List<string> AllResourceTypes { get; set; } = new();
     public List<string> AllNameTypes { get; set; } = new();
 
     public IDictionary<string, List<Comic>> GroupedResults { get; set; }

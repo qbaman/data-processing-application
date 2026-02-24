@@ -15,6 +15,8 @@
 
     var allLanguages = Model.AllLanguages ?? new List<string>();
 
+    var allContentTypes = Model.AllContentTypes ?? new List<string>();
+
     var allEditions = Model.AllEditions ?? new List<string>();
 
     var allPhysicalDescriptions = Model.AllPhysicalDescriptions ?? new List<string>();
@@ -148,6 +150,25 @@
     </div>
 
     <div class="col-md-3">
+    <label class="form-label">Content type</label>
+    <select class="form-select" name="ContentType">
+        <option value="">Any</option>
+        @foreach (var ct in allContentTypes)
+        {
+            if (!string.IsNullOrWhiteSpace(q.ContentType) &&
+                string.Equals(q.ContentType, ct, StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="@ct" selected="selected">@ct</option>
+            }
+            else
+            {
+                <option value="@ct">@ct</option>
+            }
+        }
+    </select>
+</div>
+
+    <div class="col-md-3">
         <label class="form-label">Language</label>
         <select class="form-select" name="Language">
             <option value="">Any</option>
@@ -268,6 +289,7 @@
         <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
         <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
         <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+        <input type="hidden" name="ContentType" value="@(q.ContentType ?? "")" />
         <input type="hidden" name="Topics" value="@(q.Topics ?? "")" />
         @if (q.SortDescending)
         {

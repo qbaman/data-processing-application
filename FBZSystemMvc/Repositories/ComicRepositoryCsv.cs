@@ -193,6 +193,23 @@ namespace FBZ_System.Repositories
                 .ToList();
         }
 
+
+        public IEnumerable<string> GetAllContentTypes()
+        {
+            return GetAllComics()
+                .SelectMany(c =>
+                    (c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Content type", out var vals) &&
+                    vals != null)
+                        ? vals
+                        : new List<string>())
+                .Select(x => (x ?? "").Trim())
+                .Where(x => x.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         // helpers
 
         private static string GetString(Series<string, object> row, string column)
