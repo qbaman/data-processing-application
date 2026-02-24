@@ -69,12 +69,16 @@ public class DatasetController : Controller
             SearchList = listComics,
             AllGenres = _repo.GetAllGenres().ToList(),
             AllLanguages = _repo.GetAllLanguages().ToList(),
+            AllEditions = _repo.GetAllEditions().ToList(),
+            AllResourceTypes = _repo.GetAllResourceTypes().ToList(),
+            AllTopics = _repo.GetAllTopics().ToList(),
         };
 
         // Grouping (uses the *paged* results here)
         vm.GroupedResults = _search.GroupResults(result.Query, paged);
 
         vm.AllNameTypes = _repo.GetAllNameTypes().ToList();
+
 
         return View(vm);
     }

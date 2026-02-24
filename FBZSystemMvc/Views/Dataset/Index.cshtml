@@ -7,19 +7,21 @@
 @{
     ViewData["Title"] = "Dataset Search";
 
-    // Null-safe query object
     var q = Model.Query ?? new SearchQuery();
 
     var totalPages = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
+
+    var allResourceTypes = Model.AllResourceTypes ?? new List<string>();
 
     var allLanguages = Model.AllLanguages ?? new List<string>();
 
     var allEditions = Model.AllEditions ?? new List<string>();
 
-    // IMPORTANT: do NOT name this variable "page"
     var pageNumber = q.Page <= 0 ? 1 : q.Page;
 
     var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
+
+    var allTopics = Model.AllTopics ?? new List<string>();
 
     var allGenres = Model.AllGenres ?? new List<string>();
     var allNameTypes = Model.AllNameTypes ?? new List<string>();
@@ -85,6 +87,45 @@
         <label class="form-label">Year to</label>
         <input class="form-control" type="number" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
     </div>
+
+    <div class="col-md-3">
+    <label class="form-label">Type of resource</label>
+    <select class="form-select" name="ResourceType">
+        <option value="">Any</option>
+        @foreach (var rt in allResourceTypes)
+        {
+            if (!string.IsNullOrWhiteSpace(q.ResourceType) &&
+                string.Equals(q.ResourceType, rt, StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="@rt" selected="selected">@rt</option>
+            }
+            else
+            {
+                <option value="@rt">@rt</option>
+            }
+        }
+    </select>
+</div>
+
+
+<div class="col-md-3">
+    <label class="form-label">Topics</label>
+    <select class="form-select" name="Topics">
+        <option value="">Any</option>
+        @foreach (var t in allTopics)
+        {
+            if (!string.IsNullOrWhiteSpace(q.Topics) &&
+                string.Equals(q.Topics, t, StringComparison.OrdinalIgnoreCase))
+            {
+                <option value="@t" selected="selected">@t</option>
+            }
+            else
+            {
+                <option value="@t">@t</option>
+            }
+        }
+    </select>
+</div>
 
     <div class="col-md-3">
         <label class="form-label">Language</label>
@@ -206,6 +247,8 @@
         <input type="hidden" name="Language" value="@(q.Language ?? "")" />
         <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
         <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+        <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+        <input type="hidden" name="Topics" value="@(q.Topics ?? "")" />
         @if (q.SortDescending)
         {
             <input type="hidden" name="SortDescending" value="true" />
@@ -241,6 +284,7 @@
                     <input type="hidden" name="Language" value="@(q.Language ?? "")" />
                     <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                     <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                    <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
                     @if (q.SortDescending)
                     {
                         <input type="hidden" name="SortDescending" value="true" />
@@ -270,6 +314,7 @@
                             <input type="hidden" name="Language" value="@(q.Language ?? "")" />
                             <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                             <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                            <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
                             @if (q.SortDescending)
                             {
                                 <input type="hidden" name="SortDescending" value="true" />
@@ -344,6 +389,7 @@
                                                 @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                                                 <input type="hidden" name="Page" value="@pageNumber" />
                                                 <input type="hidden" name="PageSize" value="@pageSize" />
+                                                <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
                                                 <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
                                             </form>
                                         </td>
@@ -391,6 +437,7 @@ else
                             <input type="hidden" name="Language" value="@(q.Language ?? "")" />
                             <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                             <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                            <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
                             @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                             <input type="hidden" name="Page" value="@pageNumber" />
                             <input type="hidden" name="PageSize" value="@pageSize" />

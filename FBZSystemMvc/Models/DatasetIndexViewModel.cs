@@ -18,6 +18,11 @@ public class DatasetIndexViewModel
 
     public List<string> AllLanguages { get; set; } = new();
 
+    public List<string> AllEditions { get; set; } = new();
+
+    public List<string> AllTopics { get; set; } = new();
+
+    public List<string> AllResourceTypes { get; set; } = new();
 
     public List<string> AllNameTypes { get; set; } = new();
 

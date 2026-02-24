@@ -12,6 +12,8 @@ namespace FBZ_System.Domain
         public string Genre { get; set; } = string.Empty;
         public string ResourceType { get; set; } = string.Empty;
 
+        public string Topics { get; set; } = string.Empty;
+
         public int? YearFrom { get; set; }
         public int? YearTo { get; set; }
 

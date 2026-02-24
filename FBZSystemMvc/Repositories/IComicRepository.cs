@@ -18,6 +18,8 @@ namespace FBZ_System.Repositories
 
         IEnumerable<string> GetAllEditions();
 
+        IEnumerable<string> GetAllTopics(); 
+        
         IReadOnlyList<Comic> GetByGenres(IEnumerable<string> genres);
     }
 }

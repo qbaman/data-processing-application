@@ -112,6 +112,17 @@ namespace FBZ_System.Services
                 ).ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(query.Topics))
+            {
+                var wanted = query.Topics.Trim();
+
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Topics", out var vals) &&
+                    vals != null &&
+                    vals.Any(v => string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
 
             // Title 
             if (!string.IsNullOrWhiteSpace(query.TitleContains))
