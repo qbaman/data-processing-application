@@ -92,6 +92,38 @@ public class DatasetController : Controller
         return RedirectToAction(nameof(Index), query);
     }
 
+    [HttpGet]
+public IActionResult ExportList()
+{
+    var ids = _list.GetIds(HttpContext);
+    var all = _repo.GetAllComics().ToList();
+
+    var comics = ids
+        .Select(id => all.FirstOrDefault(c => c.Id == id))
+        .Where(c => c != null)
+        .Cast<Comic>()
+        .ToList();
+
+    var sb = new System.Text.StringBuilder();
+    sb.AppendLine("Id,Title,Authors,Years,Genres,ISBNs");
+
+    foreach (var c in comics)
+    {
+        var authors = string.Join(" | ", c.Authors);
+        var years = string.Join(" | ", c.Years);
+        var genres = string.Join(" | ", c.Genres);
+        var isbns = string.Join(" | ", c.Isbns);
+
+        sb.AppendLine($"\"{c.Id}\",\"{c.MainTitle}\",\"{authors}\",\"{years}\",\"{genres}\",\"{isbns}\"");
+    }
+
+    return File(
+        System.Text.Encoding.UTF8.GetBytes(sb.ToString()),
+        "text/csv",
+        "search-list.csv"
+    );
+}
+
     [HttpPost]
     public IActionResult RemoveFromList(SearchQuery query, string id)
     {
