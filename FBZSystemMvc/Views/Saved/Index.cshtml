@@ -1,0 +1,50 @@
+@model FBZSystemMvc.Models.Saved.SavedListViewModel
+
+@{
+    ViewData["Title"] = "Saved Comics";
+}
+
+<h1>Saved Comics</h1>
+
+<form asp-action="ImportFromSession" method="post" class="mb-3">
+    <button type="submit" class="btn btn-primary">Import current session list</button>
+    <span class="text-muted ms-2">Moves items from your session Search List into your account.</span>
+</form>
+
+@if (Model.Items == null || Model.Items.Count == 0)
+{
+    <p>No saved comics yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Authors</th>
+                <th>Genres</th>
+                <th>Years</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="Dataset" asp-action="Details" asp-route-id="@item.ComicId">@item.Title</a>
+                </td>
+                <td>@item.Authors</td>
+                <td>@item.Genres</td>
+                <td>@item.Years</td>
+                <td>
+                    <form asp-action="Remove" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.ComicId" />
+                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

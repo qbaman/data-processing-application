@@ -1,0 +1,61 @@
+@model FBZSystemMvc.Models.Staff.AnalyticsDashboardViewModel
+
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<h1>Analytics Dashboard</h1>
+
+<h2>Top queries</h2>
+
+@if (Model.TopQueries == null || Model.TopQueries.Count == 0)
+{
+    <p>No analytics recorded yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Count</th>
+                <th>Query</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model.TopQueries)
+        {
+            <tr>
+                <td>@row.Count</td>
+                <td><code>@row.QueryJson</code></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<h2>Recent searches</h2>
+
+@if (Model.Recent != null && Model.Recent.Count > 0)
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>When (UTC)</th>
+                <th>User</th>
+                <th>Results</th>
+                <th>Query</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var e in Model.Recent)
+        {
+            <tr>
+                <td>@e.SearchedAtUtc.ToString("u")</td>
+                <td>@(string.IsNullOrWhiteSpace(e.UserId) ? "Anonymous" : e.UserId)</td>
+                <td>@e.ResultCount</td>
+                <td><code>@e.QueryJson</code></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
