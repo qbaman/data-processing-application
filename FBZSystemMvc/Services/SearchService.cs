@@ -13,12 +13,7 @@ namespace FBZ_System.Services
         private readonly IDictionary<string, IGroupingStrategy> _groupingStrategies;
         private readonly IDictionary<string, ISortStrategy> _sortStrategies;
 
-        private static readonly string[] FocusGenres =
-        {
-            "Fantasy",
-            "Horror",
-            "Science fiction"
-        };
+
 
         public SearchService(
             IComicRepository repository,
@@ -86,10 +81,10 @@ namespace FBZ_System.Services
 
         private List<Comic> FilterBase(SearchQuery query)
         {
-            // three focus genres.
+            // three focus genres..
             var comics = _repository
-                .GetByGenres(FocusGenres)
-                .ToList();
+            .GetAllComics()
+            .ToList();
 
             // Genre
             if (!string.IsNullOrWhiteSpace(query.Genre))
@@ -102,6 +97,54 @@ namespace FBZ_System.Services
                                     g != null &&
                                     g.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0))
                     .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.PhysicalDescription))
+            {
+                var wanted = query.PhysicalDescription.Trim();
+
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Physical description", out var vals) &&
+                    vals != null &&
+                    vals.Any(v => string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.ResourceType))
+            {
+                var wanted = query.ResourceType.Trim();
+
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Type of resource", out var vals) &&
+                    vals != null &&
+                    vals.Any(v =>
+                        string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.Topics))
+            {
+                var wanted = query.Topics.Trim();
+
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Topics", out var vals) &&
+                    vals != null &&
+                    vals.Any(v => string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.ContentType))
+            {
+                var wanted = query.ContentType.Trim();
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Content type", out var vals) &&
+                    vals != null &&
+                    vals.Any(v => string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
             }
 
             // Title 

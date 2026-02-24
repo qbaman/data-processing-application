@@ -1,9 +1,12 @@
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using FBZ_System.Domain;
 using FBZ_System.Services;
 using FBZ_System.Repositories;
 using FBZSystemMvc.Models;
 using FBZSystemMvc.Services;
+
 
 namespace FBZSystemMvc.Controllers;
 
@@ -12,12 +15,14 @@ public class DatasetController : Controller
     private readonly ISearchService _search;
     private readonly IComicRepository _repo;
     private readonly SearchListStore _list;
+    private readonly ComicFormatter _formatter;
 
-    public DatasetController(ISearchService search, IComicRepository repo, SearchListStore list)
+    public DatasetController(ISearchService search, IComicRepository repo, SearchListStore list, ComicFormatter formatter)
     {
         _search = search;
         _repo = repo;
         _list = list;
+        _formatter = formatter;
     }
 
     [HttpGet]
@@ -28,9 +33,9 @@ public class DatasetController : Controller
         // Run the search (full result set)
         var result = _search.AdvancedSearch(query);
 
-        // Search List (session)
+        // Session search list
         var ids = _list.GetIds(HttpContext);
-        var all = _repo.GetAllComics();
+        var all = _repo.GetAllComics().ToList();
 
         var listComics = ids
             .Select(id => all.FirstOrDefault(c => c.Id == id))
@@ -44,7 +49,7 @@ public class DatasetController : Controller
 
         var total = result.Comics.Count;
         var totalPages = (int)Math.Ceiling(total / (double)pageSize);
-        if (totalPages == 0) totalPages = 1;
+        if (totalPages < 1) totalPages = 1;
         if (page > totalPages) page = totalPages;
 
         var paged = result.Comics
@@ -61,8 +66,21 @@ public class DatasetController : Controller
             Results = paged,
             TotalResults = total,
             TotalPages = totalPages,
-            SearchList = listComics
+            SearchList = listComics,
+            AllPhysicalDescriptions = _repo.GetAllPhysicalDescriptions().ToList(),
+            AllGenres = _repo.GetAllGenres().ToList(),
+            AllLanguages = _repo.GetAllLanguages().ToList(),
+            AllEditions = _repo.GetAllEditions().ToList(),
+            AllResourceTypes = _repo.GetAllResourceTypes().ToList(),
+            AllTopics = _repo.GetAllTopics().ToList(),
+            AllContentTypes = _repo.GetAllContentTypes().ToList(),
         };
+
+        // Grouping (uses the *paged* results here)
+        vm.GroupedResults = _search.GroupResults(result.Query, paged);
+
+        vm.AllNameTypes = _repo.GetAllNameTypes().ToList();
+
 
         return View(vm);
     }
@@ -73,6 +91,38 @@ public class DatasetController : Controller
         _list.Add(HttpContext, id);
         return RedirectToAction(nameof(Index), query);
     }
+
+    [HttpGet]
+public IActionResult ExportList()
+{
+    var ids = _list.GetIds(HttpContext);
+    var all = _repo.GetAllComics().ToList();
+
+    var comics = ids
+        .Select(id => all.FirstOrDefault(c => c.Id == id))
+        .Where(c => c != null)
+        .Cast<Comic>()
+        .ToList();
+
+    var sb = new System.Text.StringBuilder();
+    sb.AppendLine("Id,Title,Authors,Years,Genres,ISBNs");
+
+    foreach (var c in comics)
+    {
+        var authors = string.Join(" | ", c.Authors);
+        var years = string.Join(" | ", c.Years);
+        var genres = string.Join(" | ", c.Genres);
+        var isbns = string.Join(" | ", c.Isbns);
+
+        sb.AppendLine($"\"{c.Id}\",\"{c.MainTitle}\",\"{authors}\",\"{years}\",\"{genres}\",\"{isbns}\"");
+    }
+
+    return File(
+        System.Text.Encoding.UTF8.GetBytes(sb.ToString()),
+        "text/csv",
+        "search-list.csv"
+    );
+}
 
     [HttpPost]
     public IActionResult RemoveFromList(SearchQuery query, string id)
@@ -86,5 +136,49 @@ public class DatasetController : Controller
     {
         _list.Clear(HttpContext);
         return RedirectToAction(nameof(Index), query);
+    }
+
+    public IActionResult Finish()
+    {
+        _list.Clear(HttpContext);           // clears the session search list
+        return RedirectToAction("Index", "Home");
+    }
+
+    [HttpGet]
+    public IActionResult Details(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return RedirectToAction(nameof(Index));
+
+        var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
+        if (comic is null)
+            return RedirectToAction(nameof(Index));
+
+        var vm = new ComicDetailsViewModel
+        {
+            Comic = comic,
+            AuthorsDisplay = comic.Authors?.Distinct().OrderBy(a => a).ToList() ?? new(),
+            GenresDisplay = comic.Genres?.Distinct().OrderBy(g => g).ToList() ?? new(),
+            YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new List<int>(),
+            IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
+        };
+
+        vm.InfoLines = _formatter.BuildInfoLines(comic);
+
+        vm.InfoLines = comic.ExtraAttributes
+            .OrderBy(kvp => kvp.Key)
+            .SelectMany(kvp => (kvp.Value ?? new List<string>()).Select(v => $"{kvp.Key}: {v}"))
+            .ToList();
+
+
+        return View(vm);
+    }
+
+
+
+    public IActionResult Exit()
+    {
+        _list.Clear(HttpContext);
+        return RedirectToAction("Index", "Home");
     }
 }

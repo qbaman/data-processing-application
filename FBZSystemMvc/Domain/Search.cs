@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace FBZ_System.Domain
 {
-    /// <summary>
-    /// What the user is asking for in a search.
-    /// </summary>
     public class SearchQuery
     {
         // Basic filters
@@ -15,6 +12,11 @@ namespace FBZ_System.Domain
         public string Genre { get; set; } = string.Empty;
         public string ResourceType { get; set; } = string.Empty;
 
+        public string Topics { get; set; } = string.Empty;
+        
+        public string ContentType { get; set; } = string.Empty;
+
+        public string PhysicalDescription { get; set; } = string.Empty;
         public int? YearFrom { get; set; }
         public int? YearTo { get; set; }
 
