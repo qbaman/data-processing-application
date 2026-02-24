@@ -161,6 +161,22 @@ namespace FBZ_System.Repositories
                 .ToList();
         }
 
+        public IEnumerable<string> GetAllPhysicalDescriptions()
+        {
+            return GetAllComics()
+                .SelectMany(c =>
+                    (c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Physical description", out var vals) &&
+                    vals != null)
+                        ? vals
+                        : new List<string>())
+                .Select(x => (x ?? "").Trim())
+                .Where(x => x.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         public IEnumerable<string> GetAllTopics()
         {
             return GetAllComics()

@@ -17,6 +17,8 @@
 
     var allEditions = Model.AllEditions ?? new List<string>();
 
+    var allPhysicalDescriptions = Model.AllPhysicalDescriptions ?? new List<string>();
+    
     var pageNumber = q.Page <= 0 ? 1 : q.Page;
 
     var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
@@ -107,25 +109,43 @@
     </select>
 </div>
 
+        <div class="col-md-3">
+        <label class="form-label">Physical description</label>
+        <select class="form-select" name="PhysicalDescription">
+            <option value="">Any</option>
+            @foreach (var pd in allPhysicalDescriptions)
+            {
+                if (!string.IsNullOrWhiteSpace(q.PhysicalDescription) &&
+                    string.Equals(q.PhysicalDescription, pd, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@pd" selected="selected">@pd</option>
+                }
+                else
+                {
+                    <option value="@pd">@pd</option>
+                }
+            }
+        </select>
+    </div>
 
-<div class="col-md-3">
-    <label class="form-label">Topics</label>
-    <select class="form-select" name="Topics">
-        <option value="">Any</option>
-        @foreach (var t in allTopics)
-        {
-            if (!string.IsNullOrWhiteSpace(q.Topics) &&
-                string.Equals(q.Topics, t, StringComparison.OrdinalIgnoreCase))
+    <div class="col-md-3">
+        <label class="form-label">Topics</label>
+        <select class="form-select" name="Topics">
+            <option value="">Any</option>
+            @foreach (var t in allTopics)
             {
-                <option value="@t" selected="selected">@t</option>
+                if (!string.IsNullOrWhiteSpace(q.Topics) &&
+                    string.Equals(q.Topics, t, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@t" selected="selected">@t</option>
+                }
+                else
+                {
+                    <option value="@t">@t</option>
+                }
             }
-            else
-            {
-                <option value="@t">@t</option>
-            }
-        }
-    </select>
-</div>
+        </select>
+    </div>
 
     <div class="col-md-3">
         <label class="form-label">Language</label>

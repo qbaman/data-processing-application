@@ -11,6 +11,8 @@ namespace FBZ_System.Repositories
         IEnumerable<string> GetAllGenres();
 
         IEnumerable<string> GetAllNameTypes();
+        
+        IEnumerable<string> GetAllPhysicalDescriptions();
 
         IEnumerable<string> GetAllResourceTypes();
 

@@ -67,6 +67,7 @@ public class DatasetController : Controller
             TotalResults = total,
             TotalPages = totalPages,
             SearchList = listComics,
+            AllPhysicalDescriptions = _repo.GetAllPhysicalDescriptions().ToList(),
             AllGenres = _repo.GetAllGenres().ToList(),
             AllLanguages = _repo.GetAllLanguages().ToList(),
             AllEditions = _repo.GetAllEditions().ToList(),

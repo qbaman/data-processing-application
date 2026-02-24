@@ -13,7 +13,7 @@ namespace FBZ_System.Domain
         public string ResourceType { get; set; } = string.Empty;
 
         public string Topics { get; set; } = string.Empty;
-
+public string PhysicalDescription { get; set; } = string.Empty;
         public int? YearFrom { get; set; }
         public int? YearTo { get; set; }
 

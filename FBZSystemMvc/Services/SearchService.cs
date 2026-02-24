@@ -99,6 +99,18 @@ namespace FBZ_System.Services
                     .ToList();
             }
 
+            if (!string.IsNullOrWhiteSpace(query.PhysicalDescription))
+            {
+                var wanted = query.PhysicalDescription.Trim();
+
+                comics = comics.Where(c =>
+                    c.ExtraAttributes != null &&
+                    c.ExtraAttributes.TryGetValue("Physical description", out var vals) &&
+                    vals != null &&
+                    vals.Any(v => string.Equals((v ?? "").Trim(), wanted, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+            }
+
             if (!string.IsNullOrWhiteSpace(query.ResourceType))
             {
                 var wanted = query.ResourceType.Trim();
