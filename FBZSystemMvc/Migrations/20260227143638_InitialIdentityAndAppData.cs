@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FBZSystemMvc.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialIdentityAndPersistence : Migration
+    public partial class InitialIdentityAndAppData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -57,12 +57,7 @@ namespace FBZSystemMvc.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    ComicId = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
-                    Authors = table.Column<string>(type: "TEXT", nullable: false),
-                    Genres = table.Column<string>(type: "TEXT", nullable: false),
-                    Years = table.Column<string>(type: "TEXT", nullable: false),
-                    Isbns = table.Column<string>(type: "TEXT", nullable: false),
+                    ComicId = table.Column<string>(type: "TEXT", nullable: false),
                     SavedAtUtc = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -71,19 +66,19 @@ namespace FBZSystemMvc.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SearchAnalytics",
+                name: "SearchAnalyticsEvents",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<string>(type: "TEXT", nullable: true),
-                    QueryJson = table.Column<string>(type: "TEXT", nullable: false),
+                    QueryText = table.Column<string>(type: "TEXT", nullable: false),
                     ResultCount = table.Column<int>(type: "INTEGER", nullable: false),
-                    SearchedAtUtc = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    CreatedAtUtc = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SearchAnalytics", x => x.Id);
+                    table.PrimaryKey("PK_SearchAnalyticsEvents", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -132,8 +127,8 @@ namespace FBZSystemMvc.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
+                    ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
                     UserId = table.Column<string>(type: "TEXT", nullable: false)
                 },
@@ -177,8 +172,8 @@ namespace FBZSystemMvc.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
@@ -188,6 +183,26 @@ namespace FBZSystemMvc.Migrations
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SearchResultHits",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    SearchAnalyticsEventId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ComicId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SearchResultHits", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SearchResultHits_SearchAnalyticsEvents_SearchAnalyticsEventId",
+                        column: x => x.SearchAnalyticsEventId,
+                        principalTable: "SearchAnalyticsEvents",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -228,6 +243,22 @@ namespace FBZSystemMvc.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SavedComics_UserId_ComicId",
+                table: "SavedComics",
+                columns: new[] { "UserId", "ComicId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SearchResultHits_ComicId",
+                table: "SearchResultHits",
+                column: "ComicId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SearchResultHits_SearchAnalyticsEventId",
+                table: "SearchResultHits",
+                column: "SearchAnalyticsEventId");
         }
 
         /// <inheritdoc />
@@ -252,13 +283,16 @@ namespace FBZSystemMvc.Migrations
                 name: "SavedComics");
 
             migrationBuilder.DropTable(
-                name: "SearchAnalytics");
+                name: "SearchResultHits");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "SearchAnalyticsEvents");
         }
     }
 }

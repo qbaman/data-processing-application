@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FBZSystemMvc.Models.Staff;
 using FBZSystemMvc.Services.Persistence;
+using FBZSystemMvc.Persistence.Entities;
 
 namespace FBZSystemMvc.Controllers.Staff;
 
@@ -17,15 +18,17 @@ public class AnalyticsController : Controller
     }
 
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var recent = await _analytics.GetRecentAsync(250);
-        var top = await _analytics.GetTopQueriesAsync(25);
-
-        return View(new AnalyticsDashboardViewModel
+        // Temporary "build-green" dashboard. We'll wire real queries once DB/migrations are stable.
+        var vm = new AnalyticsDashboardViewModel
         {
-            Recent = recent.ToList(),
-            TopQueries = top.ToList()
-        });
+            RecentSearches = new List<SearchAnalyticsEvent>(),
+            TopQueries = new List<(string Query, int Count)>(),
+            TopResults = new List<(string ComicId, int Count)>(),
+            ComicsOver100 = new List<(string ComicId, int Count)>()
+        };
+
+        return View(vm);
     }
 }

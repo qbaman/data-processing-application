@@ -3,8 +3,8 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using FBZ_System.Domain;
-using FBZSystemMvc.Data;
-using FBZSystemMvc.Data.Entities;
+using FBZSystemMvc.Persistence;
+using FBZSystemMvc.Persistence.Entities;
 
 namespace FBZSystemMvc.Services.Persistence;
 
@@ -17,53 +17,38 @@ public class AnalyticsService : IAnalyticsService
         _db = db;
     }
 
-    public async Task RecordSearchAsync(SearchQuery query, int resultCount, string? userId)
+    public async Task RecordSearchAsync(string queryText, int resultCount, string? userId, IEnumerable<string>? resultComicIds = null)
     {
-        if (query == null) throw new ArgumentNullException(nameof(query));
-
-        var json = JsonSerializer.Serialize(new
+        var ev = new SearchAnalyticsEvent
         {
-            query.TitleContains,
-            query.AuthorContains,
-            query.Genre,
-            query.YearFrom,
-            query.YearTo,
-            query.Language,
-            query.Edition,
-            query.NameType,
-            query.ResourceType,
-            query.Topics,
-            query.PhysicalDescription,
-            query.ContentType,
-            query.SortDescending,
-            query.GroupBy
-        });
-
-        _db.SearchAnalytics.Add(new SearchAnalyticsEvent
-        {
-            UserId = string.IsNullOrWhiteSpace(userId) ? null : userId,
-            QueryJson = json,
+            UserId = userId,
+            QueryText = queryText ?? string.Empty,
             ResultCount = resultCount,
-            SearchedAtUtc = DateTime.UtcNow
-        });
+            CreatedAtUtc = DateTime.UtcNow,
+            ResultHits = (resultComicIds ?? Enumerable.Empty<string>())
+                .Distinct()
+                .Select(id => new SearchResultHit { ComicId = id })
+                .ToList()
+        };
 
+        _db.SearchAnalyticsEvents.Add(ev);
         await _db.SaveChangesAsync();
     }
 
     public async Task<IReadOnlyList<SearchAnalyticsEvent>> GetRecentAsync(int take = 250)
     {
-        return await _db.SearchAnalytics
+        return await _db.SearchAnalyticsEvents
             .AsNoTracking()
-            .OrderByDescending(x => x.SearchedAtUtc)
+            .OrderByDescending(x => x.QueryText)
             .Take(take)
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyList<(string QueryJson, int Count)>> GetTopQueriesAsync(int take = 25)
+    public async Task<IReadOnlyList<(string QueryText, int Count)>> GetTopQueriesAsync(int take = 25)
     {
-        return await _db.SearchAnalytics
+        return await _db.SearchAnalyticsEvents
             .AsNoTracking()
-            .GroupBy(x => x.QueryJson)
+            .GroupBy(x => x.QueryText)
             .Select(g => new { g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
             .Take(take)

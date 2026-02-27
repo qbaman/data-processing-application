@@ -1,50 +1,48 @@
+@using System
+@using System.Linq
 @model FBZSystemMvc.Models.Saved.SavedListViewModel
 
 @{
     ViewData["Title"] = "Saved Comics";
+    var items = Model?.Items ?? new List<FBZSystemMvc.Persistence.Entities.SavedComic>();
 }
 
 <h1>Saved Comics</h1>
 
-<form asp-action="ImportFromSession" method="post" class="mb-3">
-    <button type="submit" class="btn btn-primary">Import current session list</button>
-    <span class="text-muted ms-2">Moves items from your session Search List into your account.</span>
-</form>
-
-@if (Model.Items == null || Model.Items.Count == 0)
+@if (!items.Any())
 {
-    <p>No saved comics yet.</p>
+    <p>You have no saved comics yet.</p>
 }
 else
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Authors</th>
-                <th>Genres</th>
-                <th>Years</th>
+                <th>Comic ID</th>
+                <th>Saved (UTC)</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-        @foreach (var item in Model.Items)
+        @foreach (var s in items)
         {
             <tr>
                 <td>
-                    <a asp-controller="Dataset" asp-action="Details" asp-route-id="@item.ComicId">@item.Title</a>
+                    <a asp-controller="Dataset" asp-action="Details" asp-route-id="@s.ComicId">@s.ComicId</a>
                 </td>
-                <td>@item.Authors</td>
-                <td>@item.Genres</td>
-                <td>@item.Years</td>
-                <td>
-                    <form asp-action="Remove" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@item.ComicId" />
-                        <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                <td>@s.SavedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="text-end">
+                    <form asp-action="Remove" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@s.ComicId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
                     </form>
                 </td>
             </tr>
         }
         </tbody>
     </table>
+
+    <form asp-action="ImportFromSession" method="post">
+        <button type="submit" class="btn btn-outline-secondary">Import current session list</button>
+    </form>
 }

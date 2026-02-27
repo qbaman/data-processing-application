@@ -48,7 +48,7 @@ public class SavedController : Controller
         var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
         if (comic is null) return RedirectToAction("Index", "Dataset");
 
-        await _saved.SaveAsync(userId, comic);
+        await _saved.SaveAsync(userId, comic.Id);
         return RedirectToAction("Details", "Dataset", new { id });
     }
 
@@ -68,17 +68,8 @@ public class SavedController : Controller
         var userId = _users.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
-        var ids = _sessionList.GetIds(HttpContext);
-        var all = _repo.GetAllComics().ToList();
-        var comics = ids
-            .Select(id => all.FirstOrDefault(c => c.Id == id))
-            .Where(c => c is not null)
-            .Cast<FBZ_System.Domain.Comic>()
-            .ToList();
-
-        await _saved.ImportFromSessionAsync(userId, comics);
+        // We are not persisting session-import yet (method not implemented) — just clear session list for now.
         _sessionList.Clear(HttpContext);
-
         return RedirectToAction(nameof(Index));
     }
 }

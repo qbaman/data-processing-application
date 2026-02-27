@@ -26,7 +26,7 @@ else
         {
             <tr>
                 <td>@row.Count</td>
-                <td><code>@row.QueryJson</code></td>
+                <td><code>@row.Query</code></td>
             </tr>
         }
         </tbody>
@@ -50,10 +50,10 @@ else
         @foreach (var e in Model.Recent)
         {
             <tr>
-                <td>@e.SearchedAtUtc.ToString("u")</td>
+                <td>@e.CreatedAtUtc.ToString("u")</td>
                 <td>@(string.IsNullOrWhiteSpace(e.UserId) ? "Anonymous" : e.UserId)</td>
                 <td>@e.ResultCount</td>
-                <td><code>@e.QueryJson</code></td>
+                <td><code>@e.QueryText</code></td>
             </tr>
         }
         </tbody>
