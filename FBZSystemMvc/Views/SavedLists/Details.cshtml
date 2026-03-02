@@ -1,0 +1,45 @@
+@using FBZ_System.Domain
+@model List<Comic>
+
+@{
+    ViewData["Title"] = "Saved List";
+    var listName = (string)ViewBag.ListName;
+    var listId = (int)ViewBag.ListId;
+}
+
+<h1>@listName</h1>
+
+<div class="mb-3">
+    <form method="post" action="/saved-lists/@listId/load-to-session" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-outline-primary" type="submit">Load into Session List</button>
+    </form>
+    <a class="btn btn-link" href="/saved-lists">Back</a>
+</div>
+
+@if (Model == null || Model.Count == 0)
+{
+    <p>List is empty.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Authors</th>
+            <th>Year</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td><a asp-controller="Dataset" asp-action="Details" asp-route-id="@c.Id">@c.MainTitle</a></td>
+                <td>@string.Join(", ", c.Authors?.Take(3) ?? Enumerable.Empty<string>())</td>
+                <td>@(c.Years?.OrderBy(y => y).FirstOrDefault().ToString() ?? "-")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

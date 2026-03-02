@@ -1,0 +1,45 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Saved Lists";
+}
+
+<h1>Saved Lists</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No saved lists yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Created (UTC)</th>
+            <th class="text-end"></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var l in Model)
+        {
+            <tr>
+                <td><a href="/saved-lists/@l.Id">@l.Name</a></td>
+                <td>@l.Count</td>
+                <td>@((DateTime)l.CreatedUtc).ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="text-end">
+                    <form method="post" action="/saved-lists/@l.Id/load-to-session" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Load</button>
+                    </form>
+                    <form method="post" action="/saved-lists/@l.Id/delete" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

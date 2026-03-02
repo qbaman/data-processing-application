@@ -1,0 +1,90 @@
+@model FBZSystemMvc.Models.Staff.AnalyticsDashboardViewModel
+
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<h1>Analytics</h1>
+
+<h3>Top 10 Search Queries</h3>
+@if (Model.TopQueries.Count == 0)
+{
+    <p>No searches recorded yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Query</th><th>Count</th></tr></thead>
+        <tbody>
+        @foreach (var q in Model.TopQueries)
+        {
+            <tr><td>@q.Query</td><td>@q.Count</td></tr>
+        }
+        </tbody>
+    </table>
+}
+
+<h3>Top 10 Most Frequently Returned Comics</h3>
+@if (Model.TopResults.Count == 0)
+{
+    <p>No results recorded yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Title</th><th>Count</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.TopResults)
+        {
+            <tr>
+                <td><a asp-controller="Dataset" asp-action="Details" asp-route-id="@r.ComicId">@r.Title</a></td>
+                <td>@r.Count</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<h3>Comics Included in More Than 100 Searches</h3>
+@if (Model.ComicsOver100.Count == 0)
+{
+    <p>None yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Title</th><th>Count</th></tr></thead>
+        <tbody>
+        @foreach (var r in Model.ComicsOver100)
+        {
+            <tr>
+                <td><a asp-controller="Dataset" asp-action="Details" asp-route-id="@r.ComicId">@r.Title</a></td>
+                <td>@r.Count</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<h3>Recent Searches</h3>
+@if (Model.RecentSearches.Count == 0)
+{
+    <p>No recent searches.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Time (UTC)</th><th>Query</th><th>Total Results</th><th>Counted</th></tr></thead>
+        <tbody>
+        @foreach (var e in Model.RecentSearches)
+        {
+            <tr>
+                <td>@e.OccurredUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@e.QuerySignature</td>
+                <td>@e.TotalResults</td>
+                <td>@e.CountedResults @(e.Truncated ? "(capped)" : "")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

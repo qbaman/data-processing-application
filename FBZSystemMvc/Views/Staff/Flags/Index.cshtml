@@ -1,0 +1,45 @@
+@model FBZSystemMvc.Models.Staff.FlagsIndexViewModel
+
+@{
+    ViewData["Title"] = "Flagged Records";
+}
+
+<h1>Flagged Records</h1>
+
+@if (Model.Flags == null || Model.Flags.Count == 0)
+{
+    <p>No flagged comics.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Reason</th>
+            <th>Flagged (UTC)</th>
+            <th class="text-end"></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.Flags)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="Dataset" asp-action="Details" asp-route-id="@f.ComicId">@f.Title</a>
+                </td>
+                <td>@(string.IsNullOrWhiteSpace(f.Reason) ? "-" : f.Reason)</td>
+                <td>@f.CreatedUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="text-end">
+                    <form asp-controller="Flags" asp-action="Unflag" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="comicId" value="@f.ComicId" />
+                        <input type="hidden" name="returnUrl" value="/staff/flags" />
+                        <button class="btn btn-sm btn-outline-warning" type="submit">Unflag</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
