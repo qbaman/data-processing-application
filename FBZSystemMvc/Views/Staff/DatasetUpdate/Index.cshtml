@@ -1,0 +1,34 @@
+@model FBZSystemMvc.Services.DatasetUpdates.DatasetUpdateStatus
+
+@{
+    ViewData["Title"] = "Dataset Updates";
+    var msg = TempData["DatasetUpdateMessage"] as string;
+}
+
+<h1>Dataset Updates</h1>
+
+@if (!string.IsNullOrWhiteSpace(msg))
+{
+    <div class="alert alert-info">@msg</div>
+}
+
+<table class="table table-striped">
+    <tbody>
+        <tr><th>Last checked (UTC)</th><td>@(Model.LastCheckedUtc?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-")</td></tr>
+        <tr><th>Last updated (UTC)</th><td>@(Model.LastUpdatedUtc?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-")</td></tr>
+        <tr><th>Last outcome</th><td>@Model.LastOutcome</td></tr>
+        <tr><th>Last error</th><td>@(string.IsNullOrWhiteSpace(Model.LastError) ? "-" : Model.LastError)</td></tr>
+        <tr><th>Current ZIP SHA256</th><td>@(string.IsNullOrWhiteSpace(Model.CurrentZipSha256) ? "-" : Model.CurrentZipSha256)</td></tr>
+        <tr><th>Local names.csv last write (UTC)</th><td>@(Model.LocalCsvLastWriteUtc?.ToString("yyyy-MM-dd HH:mm:ss") ?? "-")</td></tr>
+        <tr><th>Repository loaded (UTC)</th><td>@Model.RepositoryLoadedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td></tr>
+    </tbody>
+</table>
+
+<form method="post" action="/staff/dataset/update-now">
+    @Html.AntiForgeryToken()
+    <button class="btn btn-warning" type="submit">Update Now (Force)</button>
+</form>
+
+<p class="text-muted mt-2">
+    Background checks run automatically every configured interval. Manual update is Staff-only.
+</p>

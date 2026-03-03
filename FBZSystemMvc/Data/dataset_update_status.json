@@ -1,0 +1,9 @@
+{
+  "CurrentZipSha256": "",
+  "LastCheckedUtc": "2026-03-03T16:54:12.8714933Z",
+  "LastUpdatedUtc": null,
+  "LastOutcome": "Failed",
+  "LastError": "Response status code does not indicate success: 404 (Not Found).",
+  "RepositoryLoadedUtc": "0001-01-01T00:00:00",
+  "LocalCsvLastWriteUtc": null
+}

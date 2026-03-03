@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using FBZSystemMvc.Persistence;
 using FBZSystemMvc.Services.Persistence;
 using Microsoft.AspNetCore.Authentication;
+using FBZSystemMvc.Services.DatasetUpdates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +42,12 @@ builder.Services.AddSingleton<IComicRepository>(sp =>
 {
     var env = sp.GetRequiredService<IWebHostEnvironment>();
     var dataPath = Path.Combine(env.ContentRootPath, "Data");
-    return new ComicRepositoryCsv(dataPath);
+    return new ReloadableComicRepository(dataPath);
 });
+
+// expose the same singleton as IDatasetReloadable
+builder.Services.AddSingleton<IDatasetReloadable>(sp =>
+    (IDatasetReloadable)sp.GetRequiredService<IComicRepository>());
 
 builder.Services.AddScoped<FBZSystemMvc.Services.Persistence.IAnalyticsService, FBZSystemMvc.Services.Persistence.AnalyticsService>();
 builder.Services.AddScoped<FBZSystemMvc.Services.Persistence.ISavedComicsService, FBZSystemMvc.Services.Persistence.SavedComicsService>();
@@ -61,6 +66,11 @@ builder.Services.AddSingleton<ISearchHistoryService, SearchHistoryService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
+
+builder.Services.AddHttpClient("dataset");
+builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));
+builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();
+builder.Services.AddHostedService<DatasetUpdateHostedService>();
 
 var app = builder.Build();
 
