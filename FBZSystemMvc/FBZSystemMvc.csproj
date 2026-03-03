@@ -25,4 +25,10 @@
   <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
 </ItemGroup>
 
+<ItemGroup>
+  <Compile Remove="FBZSystemMvc.Tests\**\*.cs" />
+  <Content Remove="FBZSystemMvc.Tests\**\*" />
+  <None Remove="FBZSystemMvc.Tests\**\*" />
+</ItemGroup>
+
 </Project>

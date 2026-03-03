@@ -132,3 +132,5 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 app.Run();
+
+public partial class Program { } // for integration testing access to the Program class
