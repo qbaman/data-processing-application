@@ -3,9 +3,6 @@
 <ul class="navbar-nav">
 @if (User.Identity?.IsAuthenticated ?? false)
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-controller="SavedComics" asp-action="Index">Saved</a>
-    </li>
 
     <li class="nav-item">
         <span class="nav-link text-dark">Hello @User.Identity!.Name!</span>
