@@ -9,6 +9,7 @@ using FBZSystemMvc.Services;
 using Microsoft.EntityFrameworkCore;
 using FBZSystemMvc.Persistence;
 using FBZSystemMvc.Services.Persistence;
+using Microsoft.AspNetCore.Routing;
 
 namespace FBZSystemMvc.Controllers;
 
@@ -100,10 +101,14 @@ public class DatasetController : Controller
     }
 
     [HttpPost]
-    public IActionResult AddToList(SearchQuery query, string id)
+    public IActionResult AddToList(SearchQuery query, string id, string? kiosk)
     {
         _list.Add(HttpContext, id);
-        return RedirectToAction(nameof(Index), query);
+
+        var rv = new RouteValueDictionary(query);
+        if (kiosk == "1") rv["kiosk"] = "1";
+
+        return RedirectToAction(nameof(Index), rv);
     }
 
     [HttpGet]
@@ -139,17 +144,26 @@ public class DatasetController : Controller
     }
 
     [HttpPost]
-    public IActionResult RemoveFromList(SearchQuery query, string id)
+    public IActionResult RemoveFromList(SearchQuery query, string id, string? kiosk)
     {
         _list.Remove(HttpContext, id);
-        return RedirectToAction(nameof(Index), query);
+
+        var rv = new RouteValueDictionary(query);
+        if (kiosk == "1") rv["kiosk"] = "1";
+
+        return RedirectToAction(nameof(Index), rv);
     }
 
+
     [HttpPost]
-    public IActionResult ClearList(SearchQuery query)
+    public IActionResult ClearList(SearchQuery query, string? kiosk)
     {
         _list.Clear(HttpContext);
-        return RedirectToAction(nameof(Index), query);
+
+        var rv = new RouteValueDictionary(query);
+        if (kiosk == "1") rv["kiosk"] = "1";
+
+        return RedirectToAction(nameof(Index), rv);
     }
 
     public IActionResult Finish()

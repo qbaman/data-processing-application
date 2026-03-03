@@ -12,46 +12,81 @@
     var totalPages = Model.TotalPages <= 0 ? 1 : Model.TotalPages;
 
     var allResourceTypes = Model.AllResourceTypes ?? new List<string>();
-
     var allLanguages = Model.AllLanguages ?? new List<string>();
-
     var allContentTypes = Model.AllContentTypes ?? new List<string>();
-
     var allEditions = Model.AllEditions ?? new List<string>();
-
     var allPhysicalDescriptions = Model.AllPhysicalDescriptions ?? new List<string>();
-    
-    var pageNumber = q.Page <= 0 ? 1 : q.Page;
-
-    var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
-
     var allTopics = Model.AllTopics ?? new List<string>();
-
     var allGenres = Model.AllGenres ?? new List<string>();
     var allNameTypes = Model.AllNameTypes ?? new List<string>();
+
+    var pageNumber = q.Page <= 0 ? 1 : q.Page;
+    var pageSize = q.PageSize <= 0 ? 50 : q.PageSize;
+
+    // Kiosk mode if ?kiosk=1 or ?kiosk=true
+    var kiosk = string.Equals(Context.Request.Query["kiosk"], "1", StringComparison.OrdinalIgnoreCase)
+             || string.Equals(Context.Request.Query["kiosk"], "true", StringComparison.OrdinalIgnoreCase);
+
+    var inputClass = kiosk ? "form-control form-control-lg" : "form-control";
+    var selectClass = kiosk ? "form-select form-select-lg" : "form-select";
+
+    var btnPrimary = kiosk ? "btn btn-lg btn-primary" : "btn btn-primary";
+    var btnSecondary = kiosk ? "btn btn-lg btn-outline-secondary" : "btn btn-outline-secondary";
+    var btnDanger = kiosk ? "btn btn-lg btn-outline-danger" : "btn btn-outline-danger";
+
+    var btnOutlinePrimary = kiosk ? "btn btn-lg btn-outline-primary" : "btn btn-outline-primary";
+    var btnOutlinePrimarySm = kiosk ? "btn btn-lg btn-outline-primary" : "btn btn-sm btn-outline-primary";
+    var btnOutlineDangerSm = kiosk ? "btn btn-lg btn-outline-danger" : "btn btn-sm btn-outline-danger";
+    var btnOutlineSecondarySm = kiosk ? "btn btn-lg btn-outline-secondary" : "btn btn-sm btn-outline-secondary";
+    var btnOutlineSuccessSm = kiosk ? "btn btn-lg btn-outline-success" : "btn btn-sm btn-outline-success";
+
+    string KioskHref(string baseHref) => kiosk
+        ? (baseHref.Contains("?") ? $"{baseHref}&kiosk=1" : $"{baseHref}?kiosk=1")
+        : baseHref;
 }
 
 <h1>Dataset Search</h1>
 
-<form method="get" class="row g-3 mb-4">
+@if (kiosk)
+{
+    <style>
+        body { font-size: 1.15rem; }
+        .form-label { font-size: 1.05rem; }
+        .btn, .form-control, .form-select { border-radius: .75rem; }
+        .table td, .table th { padding: .85rem; }
+        .accordion-button { padding: 1rem 1.25rem; font-size: 1.1rem; }
+        .list-group-item { padding: 1rem 1.25rem; }
+    </style>
+}
+
+<div class="mb-3 d-flex gap-2">
+    <a class="btn @(kiosk ? "btn-dark" : "btn-outline-dark")" href="/Dataset?kiosk=1">Kiosk mode</a>
+    <a class="btn @(!kiosk ? "btn-dark" : "btn-outline-dark")" href="/Dataset">Normal mode</a>
+</div>
+
+<form method="get" class="row @(kiosk ? "g-4" : "g-3") mb-4">
+    @if (kiosk)
+    {
+        <input type="hidden" name="kiosk" value="1" />
+    }
+
     <div class="col-md-4">
         <label class="form-label">Title contains</label>
-        <input class="form-control" name="TitleContains" value="@(q.TitleContains ?? "")" />
+        <input class="@inputClass" name="TitleContains" value="@(q.TitleContains ?? "")" />
     </div>
 
     <div class="col-md-4">
         <label class="form-label">Author contains</label>
-        <input class="form-control" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+        <input class="@inputClass" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
     </div>
 
     <div class="col-md-4">
         <label class="form-label">Genre</label>
-        <select class="form-select" name="Genre">
+        <select class="@selectClass" name="Genre">
             <option value="">All genres</option>
             @foreach (var g in allGenres)
             {
-                if (!string.IsNullOrWhiteSpace(q.Genre) &&
-                    string.Equals(q.Genre, g, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.Genre) && string.Equals(q.Genre, g, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@g" selected="selected">@g</option>
                 }
@@ -65,12 +100,11 @@
 
     <div class="col-md-3">
         <label class="form-label">Name type</label>
-        <select class="form-select" name="NameType">
+        <select class="@selectClass" name="NameType">
             <option value="">Any</option>
             @foreach (var nt in allNameTypes)
             {
-                if (!string.IsNullOrWhiteSpace(q.NameType) &&
-                    string.Equals(q.NameType, nt, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.NameType) && string.Equals(q.NameType, nt, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@nt" selected="selected">@nt</option>
                 }
@@ -84,41 +118,39 @@
 
     <div class="col-md-2">
         <label class="form-label">Year from</label>
-        <input class="form-control" type="number" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+        <input class="@inputClass" type="number" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
     </div>
 
     <div class="col-md-2">
         <label class="form-label">Year to</label>
-        <input class="form-control" type="number" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+        <input class="@inputClass" type="number" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
     </div>
 
     <div class="col-md-3">
-    <label class="form-label">Type of resource</label>
-    <select class="form-select" name="ResourceType">
-        <option value="">Any</option>
-        @foreach (var rt in allResourceTypes)
-        {
-            if (!string.IsNullOrWhiteSpace(q.ResourceType) &&
-                string.Equals(q.ResourceType, rt, StringComparison.OrdinalIgnoreCase))
+        <label class="form-label">Type of resource</label>
+        <select class="@selectClass" name="ResourceType">
+            <option value="">Any</option>
+            @foreach (var rt in allResourceTypes)
             {
-                <option value="@rt" selected="selected">@rt</option>
+                if (!string.IsNullOrWhiteSpace(q.ResourceType) && string.Equals(q.ResourceType, rt, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@rt" selected="selected">@rt</option>
+                }
+                else
+                {
+                    <option value="@rt">@rt</option>
+                }
             }
-            else
-            {
-                <option value="@rt">@rt</option>
-            }
-        }
-    </select>
-</div>
+        </select>
+    </div>
 
-        <div class="col-md-3">
+    <div class="col-md-3">
         <label class="form-label">Physical description</label>
-        <select class="form-select" name="PhysicalDescription">
+        <select class="@selectClass" name="PhysicalDescription">
             <option value="">Any</option>
             @foreach (var pd in allPhysicalDescriptions)
             {
-                if (!string.IsNullOrWhiteSpace(q.PhysicalDescription) &&
-                    string.Equals(q.PhysicalDescription, pd, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.PhysicalDescription) && string.Equals(q.PhysicalDescription, pd, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@pd" selected="selected">@pd</option>
                 }
@@ -132,12 +164,11 @@
 
     <div class="col-md-3">
         <label class="form-label">Topics</label>
-        <select class="form-select" name="Topics">
+        <select class="@selectClass" name="Topics">
             <option value="">Any</option>
             @foreach (var t in allTopics)
             {
-                if (!string.IsNullOrWhiteSpace(q.Topics) &&
-                    string.Equals(q.Topics, t, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.Topics) && string.Equals(q.Topics, t, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@t" selected="selected">@t</option>
                 }
@@ -150,32 +181,30 @@
     </div>
 
     <div class="col-md-3">
-    <label class="form-label">Content type</label>
-    <select class="form-select" name="ContentType">
-        <option value="">Any</option>
-        @foreach (var ct in allContentTypes)
-        {
-            if (!string.IsNullOrWhiteSpace(q.ContentType) &&
-                string.Equals(q.ContentType, ct, StringComparison.OrdinalIgnoreCase))
+        <label class="form-label">Content type</label>
+        <select class="@selectClass" name="ContentType">
+            <option value="">Any</option>
+            @foreach (var ct in allContentTypes)
             {
-                <option value="@ct" selected="selected">@ct</option>
+                if (!string.IsNullOrWhiteSpace(q.ContentType) && string.Equals(q.ContentType, ct, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@ct" selected="selected">@ct</option>
+                }
+                else
+                {
+                    <option value="@ct">@ct</option>
+                }
             }
-            else
-            {
-                <option value="@ct">@ct</option>
-            }
-        }
-    </select>
-</div>
+        </select>
+    </div>
 
     <div class="col-md-3">
         <label class="form-label">Language</label>
-        <select class="form-select" name="Language">
+        <select class="@selectClass" name="Language">
             <option value="">Any</option>
             @foreach (var lang in allLanguages)
             {
-                if (!string.IsNullOrWhiteSpace(q.Language) &&
-                    string.Equals(q.Language, lang, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.Language) && string.Equals(q.Language, lang, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@lang" selected="selected">@lang</option>
                 }
@@ -184,18 +213,16 @@
                     <option value="@lang">@lang</option>
                 }
             }
-    </select>
-</div>
+        </select>
+    </div>
 
-
-        <div class="col-md-3">
+    <div class="col-md-3">
         <label class="form-label">Edition</label>
-        <select class="form-select" name="Edition">
+        <select class="@selectClass" name="Edition">
             <option value="">Any</option>
             @foreach (var ed in allEditions)
             {
-                if (!string.IsNullOrWhiteSpace(q.Edition) &&
-                    string.Equals(q.Edition, ed, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(q.Edition) && string.Equals(q.Edition, ed, StringComparison.OrdinalIgnoreCase))
                 {
                     <option value="@ed" selected="selected">@ed</option>
                 }
@@ -207,10 +234,9 @@
         </select>
     </div>
 
-
     <div class="col-md-2">
         <label class="form-label">Group by</label>
-        <select class="form-select" name="GroupBy">
+        <select class="@selectClass" name="GroupBy">
             @if (string.Equals(q.GroupBy, "Author", StringComparison.OrdinalIgnoreCase))
             {
                 <option value="None">None</option>
@@ -234,15 +260,15 @@
 
     <div class="col-md-2 d-flex align-items-end">
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="SortDescending" value="true" @(q.SortDescending ? "checked" : "") />
-            <label class="form-check-label">Sort Z–A</label>
+            <input class="form-check-input" type="checkbox" name="SortDescending" value="true" @(q.SortDescending ? "checked" : "") style="transform: @(kiosk ? "scale(1.3)" : "scale(1)")" />
+            <label class="form-check-label ms-2">Sort Z–A</label>
         </div>
     </div>
 
     <div class="col-md-2 d-flex align-items-end">
         <div>
             <label class="form-label">Page size</label>
-            <select class="form-select" name="PageSize">
+            <select class="@selectClass" name="PageSize">
                 @if (pageSize == 25)
                 {
                     <option value="25" selected="selected">25</option>
@@ -265,24 +291,27 @@
         </div>
     </div>
 
-    <div class="col-12">
-        <button class="btn btn-primary" type="submit">Search</button>
-        <a class="btn btn-outline-secondary" href="/Dataset?Page=1&PageSize=50">Reset</a>
-        <a class="btn btn-outline-danger" href="/Dataset/Exit">Finish / Exit</a>
+    <div class="col-12 d-flex flex-wrap gap-2">
+        <button class="@btnPrimary" type="submit">Search</button>
+        <a class="@btnSecondary" href="@(kiosk ? "/Dataset?kiosk=1&Page=1&PageSize=50" : "/Dataset?Page=1&PageSize=50")">Reset</a>
+        <a class="@btnDanger" href="/Dataset/Exit">Finish / Exit</a>
     </div>
 </form>
 
-    <a class="btn btn-sm btn-outline-success" href="/Dataset/ExportList">
-    Export CSV
-</a>
+<a class="@btnOutlineSuccessSm" href="@(kiosk ? "/Dataset/ExportList?kiosk=1" : "/Dataset/ExportList")">Export CSV</a>
 
-<div class="d-flex justify-content-between align-items-center mb-2">
+<div class="d-flex justify-content-between align-items-center mb-2 mt-3">
     <p class="mb-0">
         <strong>@Model.TotalResults</strong> result(s)
         — Page <strong>@pageNumber</strong> of <strong>@totalPages</strong>
     </p>
 
     <form method="get" class="d-flex gap-2">
+        @if (kiosk)
+        {
+            <input type="hidden" name="kiosk" value="1" />
+        }
+
         <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
         <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
         <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
@@ -301,12 +330,12 @@
         }
         <input type="hidden" name="PageSize" value="@pageSize" />
 
-        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Max(1, pageNumber - 1))"
+        <button class="@btnOutlinePrimary" type="submit" name="Page" value="@(Math.Max(1, pageNumber - 1))"
                 @(pageNumber <= 1 ? "disabled" : "")>
             Prev
         </button>
 
-        <button class="btn btn-outline-primary" type="submit" name="Page" value="@(Math.Min(totalPages, pageNumber + 1))"
+        <button class="@btnOutlinePrimary" type="submit" name="Page" value="@(Math.Min(totalPages, pageNumber + 1))"
                 @(pageNumber >= totalPages ? "disabled" : "")>
             Next
         </button>
@@ -317,10 +346,12 @@
 {
     <div class="card mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="card-title mb-0">Search List (@Model.SearchList.Count)</h5>
 
                 <form method="post" action="/Dataset/ClearList" class="m-0">
+                    @if (kiosk) { <input type="hidden" name="kiosk" value="1" /> }
+
                     <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
                     <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
                     <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
@@ -331,37 +362,36 @@
                     <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                     <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
                     <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
-                    @if (q.SortDescending)
-                    {
-                        <input type="hidden" name="SortDescending" value="true" />
-                    }
+                    @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                     <input type="hidden" name="Page" value="@pageNumber" />
                     <input type="hidden" name="PageSize" value="@pageSize" />
 
-                    <button class="btn btn-sm btn-outline-danger" type="submit">Clear</button>
+                    <button class="@btnOutlineDangerSm" type="submit">Clear</button>
                 </form>
             </div>
 
-    @if (User.Identity?.IsAuthenticated ?? false)
-    {
-        <form method="post" action="/saved-lists/create-from-session" class="mt-2 d-flex gap-2">
-            @Html.AntiForgeryToken()
-            <input class="form-control" style="max-width:260px" name="name" placeholder="Name this list (e.g. 'Horror picks')" />
-            <button class="btn btn-outline-success" type="submit">Save Search List</button>
-        </form>
-    }
-    else
-    {
-        <p class="text-muted mt-2">Log in to save your Search List across devices.</p>
-    }
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <form method="post" action="/saved-lists/create-from-session" class="mt-3 d-flex gap-2 flex-wrap">
+                    @Html.AntiForgeryToken()
+                    <input class="@(kiosk ? "form-control form-control-lg" : "form-control")" style="max-width:320px" name="name" placeholder="Name this list (e.g. 'Horror picks')" />
+                    <button class="@(kiosk ? "btn btn-lg btn-outline-success" : "btn btn-outline-success")" type="submit">Save Search List</button>
+                </form>
+            }
+            else
+            {
+                <p class="text-muted mt-2">Log in to save your Search List across devices.</p>
+            }
 
             <ul class="list-group list-group-flush mt-3">
                 @foreach (var item in Model.SearchList)
                 {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <span>@item.MainTitle</span>
 
                         <form method="post" action="/Dataset/RemoveFromList" class="m-0">
+                            @if (kiosk) { <input type="hidden" name="kiosk" value="1" /> }
+
                             <input type="hidden" name="id" value="@item.Id" />
 
                             <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
@@ -374,14 +404,11 @@
                             <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
                             <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
                             <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
-                            @if (q.SortDescending)
-                            {
-                                <input type="hidden" name="SortDescending" value="true" />
-                            }
+                            @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
                             <input type="hidden" name="Page" value="@pageNumber" />
                             <input type="hidden" name="PageSize" value="@pageSize" />
 
-                            <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
+                            <button class="@btnOutlineSecondarySm" type="submit">Remove</button>
                         </form>
                     </li>
                 }
@@ -415,47 +442,91 @@
                 <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId"
                      data-bs-parent="#groupedResultsAccordion">
                     <div class="accordion-body p-0">
-                        <table class="table table-sm table-striped align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Authors</th>
-                                    <th>Years</th>
-                                    <th>Genres</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <div class="table-responsive">
+                            <table class="table @(kiosk ? "table-striped align-middle mb-0" : "table-sm table-striped align-middle mb-0")">
+                                <thead>
+                                @if (kiosk)
+                                {
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Year</th>
+                                        <th class="text-end">Add</th>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Authors</th>
+                                        <th>Years</th>
+                                        <th>Genres</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                }
+                                </thead>
+                                <tbody>
                                 @foreach (var c in group.Value)
                                 {
                                     <tr>
                                         <td><a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a></td>
-                                        <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
-                                        <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
-                                        <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
-                                        <td class="text-end">
-                                            <form method="post" action="/Dataset/AddToList" style="display:inline">
-                                                <input type="hidden" name="id" value="@c.Id" />
-                                                <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
-                                                <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
-                                                <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
-                                                <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
-                                                <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
-                                                <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
-                                                <input type="hidden" name="Language" value="@(q.Language ?? "")" />
-                                                <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
-                                                <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
-                                                @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
-                                                <input type="hidden" name="Page" value="@pageNumber" />
-                                                <input type="hidden" name="PageSize" value="@pageSize" />
-                                                <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
-                                                <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
-                                            </form>
-                                        </td>
+
+                                        @if (kiosk)
+                                        {
+                                            <td>@(c.Years.Count == 0 ? "-" : c.Years.OrderBy(y => y).First().ToString())</td>
+                                            <td class="text-end">
+                                                <form method="post" action="/Dataset/AddToList" style="display:inline">
+                                                    @if (kiosk) { <input type="hidden" name="kiosk" value="1" /> }
+
+                                                    <input type="hidden" name="id" value="@c.Id" />
+                                                    <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                                                    <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                                                    <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                                    <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
+                                                    <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                                                    <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                                                    <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                                                    <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                                                    <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                                                    @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
+                                                    <input type="hidden" name="Page" value="@pageNumber" />
+                                                    <input type="hidden" name="PageSize" value="@pageSize" />
+                                                    <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+
+                                                    <button class="@btnOutlinePrimarySm" type="submit">Add</button>
+                                                </form>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+                                            <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+                                            <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                                            <td class="text-end">
+                                                <form method="post" action="/Dataset/AddToList" style="display:inline">
+                                                    <input type="hidden" name="id" value="@c.Id" />
+                                                    <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                                                    <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                                                    <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                                    <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
+                                                    <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                                                    <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                                                    <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                                                    <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                                                    <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                                                    @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
+                                                    <input type="hidden" name="Page" value="@pageNumber" />
+                                                    <input type="hidden" name="PageSize" value="@pageSize" />
+                                                    <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+
+                                                    <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                                                </form>
+                                            </td>
+                                        }
                                     </tr>
                                 }
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -464,47 +535,93 @@
 }
 else
 {
-    <table class="table table-sm table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Authors</th>
-                <th>Years</th>
-                <th>Genres</th>
-                <th>ISBNs</th>
-                <th class="text-end">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="table-responsive">
+        <table class="table @(kiosk ? "table-striped align-middle" : "table-sm table-striped align-middle")">
+            <thead>
+            @if (kiosk)
+            {
+                <tr>
+                    <th>Title</th>
+                    <th>Year</th>
+                    <th class="text-end">Add</th>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <th>Title</th>
+                    <th>Authors</th>
+                    <th>Years</th>
+                    <th>Genres</th>
+                    <th>ISBNs</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            }
+            </thead>
+            <tbody>
             @foreach (var c in Model.Results ?? new List<Comic>())
             {
                 <tr>
                     <td><a href="/Dataset/Details?id=@c.Id">@c.MainTitle</a></td>
-                    <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
-                    <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
-                    <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
-                    <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
-                    <td class="text-end">
-                        <form method="post" action="/Dataset/AddToList" style="display:inline">
-                            <input type="hidden" name="id" value="@c.Id" />
-                            <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
-                            <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
-                            <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
-                            <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
-                            <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
-                            <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
-                            <input type="hidden" name="Language" value="@(q.Language ?? "")" />
-                            <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
-                            <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
-                            <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
-                            @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
-                            <input type="hidden" name="Page" value="@pageNumber" />
-                            <input type="hidden" name="PageSize" value="@pageSize" />
-                            <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
-                        </form>
-                    </td>
+
+                    @if (kiosk)
+                    {
+                        <td>@(c.Years.Count == 0 ? "-" : c.Years.OrderBy(y => y).First().ToString())</td>
+                        <td class="text-end">
+                            <form method="post" action="/Dataset/AddToList" style="display:inline">
+                                @if (kiosk) { <input type="hidden" name="kiosk" value="1" /> }
+
+                                <input type="hidden" name="id" value="@c.Id" />
+                                <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                                <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                                <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
+                                <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                                <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                                <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                                <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                                <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                                <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+                                <input type="hidden" name="ContentType" value="@(q.ContentType ?? "")" />
+                                <input type="hidden" name="Topics" value="@(q.Topics ?? "")" />
+                                @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
+                                <input type="hidden" name="Page" value="@pageNumber" />
+                                <input type="hidden" name="PageSize" value="@pageSize" />
+
+                                <button class="@btnOutlinePrimarySm" type="submit">Add</button>
+                            </form>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@string.Join(", ", c.Authors.Take(3))@(c.Authors.Count > 3 ? "…" : "")</td>
+                        <td>@(c.Years.Count == 0 ? "" : string.Join(", ", c.Years.OrderBy(y => y)))</td>
+                        <td>@string.Join(", ", c.Genres.Take(3))@(c.Genres.Count > 3 ? "…" : "")</td>
+                        <td>@string.Join(", ", c.Isbns.Take(2))@(c.Isbns.Count > 2 ? "…" : "")</td>
+                        <td class="text-end">
+                            <form method="post" action="/Dataset/AddToList" style="display:inline">
+                                <input type="hidden" name="id" value="@c.Id" />
+                                <input type="hidden" name="TitleContains" value="@(q.TitleContains ?? "")" />
+                                <input type="hidden" name="AuthorContains" value="@(q.AuthorContains ?? "")" />
+                                <input type="hidden" name="Genre" value="@(q.Genre ?? "")" />
+                                <input type="hidden" name="NameType" value="@(q.NameType ?? "")" />
+                                <input type="hidden" name="YearFrom" value="@(q.YearFrom?.ToString() ?? "")" />
+                                <input type="hidden" name="YearTo" value="@(q.YearTo?.ToString() ?? "")" />
+                                <input type="hidden" name="Language" value="@(q.Language ?? "")" />
+                                <input type="hidden" name="Edition" value="@(q.Edition ?? "")" />
+                                <input type="hidden" name="GroupBy" value="@(q.GroupBy ?? "None")" />
+                                <input type="hidden" name="ResourceType" value="@(q.ResourceType ?? "")" />
+                                @if (q.SortDescending) { <input type="hidden" name="SortDescending" value="true" /> }
+                                <input type="hidden" name="Page" value="@pageNumber" />
+                                <input type="hidden" name="PageSize" value="@pageSize" />
+
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+                            </form>
+                        </td>
+                    }
                 </tr>
             }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 }
