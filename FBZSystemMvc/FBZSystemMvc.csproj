@@ -31,4 +31,11 @@
   <None Remove="FBZSystemMvc.Tests\**\*" />
 </ItemGroup>
 
+<ItemGroup>
+  <Compile Remove="FBZSystemMvc.UITests/**/*.cs" />
+  <EmbeddedResource Remove="FBZSystemMvc.UITests/**/*" />
+  <None Remove="FBZSystemMvc.UITests/**/*" />
+  <Content Remove="FBZSystemMvc.UITests/**/*" />
+</ItemGroup>
+
 </Project>
