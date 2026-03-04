@@ -16,7 +16,7 @@ public sealed class SeleniumFixture : IDisposable
 
         var options = new ChromeOptions();
         options.AddArgument("--headless=new");
-        options.AddArgument("--window-size=1400,900");
+        options.AddArgument("--window-size=1920,1080");
         options.AddArgument("--no-sandbox");
         options.AddArgument("--disable-gpu");
 
