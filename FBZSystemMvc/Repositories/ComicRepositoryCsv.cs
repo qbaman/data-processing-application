@@ -65,29 +65,21 @@ namespace FBZ_System.Repositories
 
                 AddMultiValue(comic.VariantTitles, variantTitle);
 
-                // Authors
                 AddMultiValue(comic.Authors, name);
 
-                // Name type
                 AddMultiValue(comic.NameTypes, typeOfName);
 
-                // Genres
                 AddMultiValue(comic.Genres, genre);
 
-                // Languages
                 AddMultiValue(comic.Languages, languages);
 
-                // Editions
                 AddMultiValue(comic.Editions, edition);
 
-                // Year
                 if (int.TryParse(yearText, out int year))
                     AddUnique(comic.Years, year);
 
-                // ISBN
                 AddMultiValue(comic.Isbns, isbn);
 
-                // Extra attributes (semicolon-separated, often contains "Key: Value" parts)
                 AddExtra(comic, "Type of resource", typeOfResource);
                 AddExtra(comic, "Content type", contentType);
                 AddExtra(comic, "Material type", materialType);
@@ -98,7 +90,6 @@ namespace FBZ_System.Repositories
 
             foreach (var c in comicsById.Values)
             {
-                // if no isbn mark "missing"
                 if (c.Isbns.Count == 0)
                     c.Isbns.Add("missing");
 
@@ -122,7 +113,6 @@ namespace FBZ_System.Repositories
                 .ToList();
         }
 
-        // REQUIRED by your interface (this fixes your build error)
         public IEnumerable<string> GetAllGenres()
         {
             return _comics
@@ -273,7 +263,6 @@ namespace FBZ_System.Repositories
                 target.Add(value);
         }
 
-        // NOTE: split ONLY by semicolon to avoid breaking values containing commas (e.g., names)
         private static void AddMultiValue(List<string> target, string raw)
         {
             if (target == null || string.IsNullOrWhiteSpace(raw))
@@ -290,7 +279,6 @@ namespace FBZ_System.Repositories
             }
         }
 
-        // ExtraAttributes: split ONLY by semicolon (preserve commas), keep "Key: Value" parts as-is
         private static void AddExtra(Comic comic, string key, string raw)
         {
             if (comic == null || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(raw))

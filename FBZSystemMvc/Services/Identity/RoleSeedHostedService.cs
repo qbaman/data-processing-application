@@ -4,10 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace FBZSystemMvc.Services.Identity;
 
-/// <summary>
-/// Ensures required roles exist.
-/// Note: assigning users to Staff should be done via an admin screen or a one-off script.
-/// </summary>
 public class RoleSeedHostedService : IHostedService
 {
     private readonly IServiceProvider _services;

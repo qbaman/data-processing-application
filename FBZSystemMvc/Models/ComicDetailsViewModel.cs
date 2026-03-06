@@ -12,7 +12,6 @@ public class ComicDetailsViewModel
     public List<string> AuthorsDisplay { get; set; } = new();
     public List<string> GenresDisplay { get; set; } = new();
 
-    // Optional: show extra fields as key:value lines if you have them
     public List<string> InfoLines { get; set; } = new();
 
     public bool IsFlagged { get; set; }

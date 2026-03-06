@@ -62,7 +62,7 @@ public class SavedListsController : Controller
         if (ids.Count == 0)
             return BadRequest("Session Search List is empty.");
 
-        // prevent duplicate name per user (unique index also enforces)
+        // prevent duplicate name per user
         var exists = _db.SavedSearchLists.Any(x => x.UserId == userId && x.Name == name);
         if (exists)
             return BadRequest("You already have a list with that name.");

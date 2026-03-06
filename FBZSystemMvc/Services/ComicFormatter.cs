@@ -5,7 +5,7 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Services
 {
-    public class ComicFormatter // ONLY FORMATS COMIC OBJECTS INTO DISPLAYABLE STRINGS. SINGLE RESPONSIBILITY 
+    public class ComicFormatter
     {
         public string FormatTitle(Comic comic)
         {
@@ -81,7 +81,6 @@ namespace FBZ_System.Services
 
             if (list.Count == 0) return;
 
-            // one line per value (kiosk-friendly)
             foreach (var v in list)
                 lines.Add($"{label}: {v}");
         }

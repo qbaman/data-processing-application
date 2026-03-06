@@ -22,7 +22,6 @@ public class ReloadableComicRepository : IComicRepository, IDatasetReloadable
 
     public void Reload()
     {
-        // Build new repo first (so we only swap if it succeeds)
         var fresh = new ComicRepositoryCsv(DataFolderPath);
 
         _lock.EnterWriteLock();

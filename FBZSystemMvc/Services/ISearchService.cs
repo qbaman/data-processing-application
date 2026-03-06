@@ -3,7 +3,7 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Services
 {
-    public interface ISearchService // ONLY CONTAINS SEARCH-RELATED ACTIONOS. OTHER THINGS LIKE HISTORY AND FORMATTING ARE IN SEPERATE CLASSES. ISP
+    public interface ISearchService
     {
         List<Comic> SearchByGenre(SearchQuery query);
         SearchResult AdvancedSearch(SearchQuery query);

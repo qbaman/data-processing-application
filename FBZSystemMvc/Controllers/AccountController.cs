@@ -14,7 +14,6 @@ public class AccountController : Controller
         _signInManager = signInManager;
     }
 
-    // Works even if logout gets hit by GET (simple + reliable for your coursework demo)
     [HttpGet("/account/logout")]
     public async Task<IActionResult> LogoutGet(string? returnUrl = "/")
     {

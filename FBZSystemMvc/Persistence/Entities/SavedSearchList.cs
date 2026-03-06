@@ -9,7 +9,7 @@ public class SavedSearchList
     public int Id { get; set; }
 
     [Required]
-    public string UserId { get; set; } = default!;   // IdentityUser.Id
+    public string UserId { get; set; } = default!;
 
     [Required]
     [MaxLength(100)]

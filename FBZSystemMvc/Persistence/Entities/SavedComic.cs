@@ -10,7 +10,6 @@ public class SavedComic
     [Required]
     public string UserId { get; set; } = string.Empty;
 
-    // The BL/CSV "Id" you already use in Domain.Comic
     [Required]
     public string ComicId { get; set; } = string.Empty;
 

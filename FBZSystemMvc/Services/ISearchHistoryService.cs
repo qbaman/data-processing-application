@@ -3,7 +3,7 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Services
 {
-    public interface ISearchHistoryService // ONLY DESCRIBES THE METHODS NEEDED TO HANDLE SEARC HISTORY. ISP
+    public interface ISearchHistoryService
     {
         void RecordSearch(SearchResult result);
 

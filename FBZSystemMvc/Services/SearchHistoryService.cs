@@ -5,12 +5,11 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Services
 {
-    public class SearchHistoryService : ISearchHistoryService // CLASS ONLY MANAGES SEARC HISTROY, TAKES IN EACH SEARCH AND RETURNS IT AND CLEARS IT, DOESNT DISPLAY ANYTHING. SINGLE RESPONSIBILITY. 
+    public class SearchHistoryService : ISearchHistoryService
     {
         private readonly Dictionary<string, (SearchQuery Query, int Count)> _queryCounts
             = new(StringComparer.OrdinalIgnoreCase);
 
-        // key = comic Id
         private readonly Dictionary<string, (Comic Comic, int Count)> _resultCounts
             = new(StringComparer.OrdinalIgnoreCase);
 

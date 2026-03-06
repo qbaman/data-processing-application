@@ -7,7 +7,7 @@ using FBZ_System.Strategies;
 
 namespace FBZ_System.Services
 {
-    public class SearchService : ISearchService // ONLY HANDLES LOGIC; FILTERING AND SORTING. IT DOESNT KNOW ANYTHING ABOUT THE CSV FILES OR DESIGNER FORM. SINGLE RESPONSIBILITY.
+    public class SearchService : ISearchService 
     {
         private readonly IComicRepository _repository;
         private readonly IDictionary<string, IGroupingStrategy> _groupingStrategies;
@@ -17,7 +17,7 @@ namespace FBZ_System.Services
 
         public SearchService(
             IComicRepository repository,
-            IEnumerable<IGroupingStrategy> groupingStrategies, // SearchService WORKS WITH ARRAY OF STRATEGIES. TO ADD NEW SORTS YOU JUST PASS NEW STRATEGY CLASS INTO THIS ARRAY AND YOU DONT HAVE TO ALTER THE SEARCH LOGIC. OCP
+            IEnumerable<IGroupingStrategy> groupingStrategies, 
             IEnumerable<ISortStrategy> sortStrategies)
         {
             _repository = repository;
@@ -35,7 +35,6 @@ namespace FBZ_System.Services
 
             var comics = FilterBase(query);
 
-            // by title
             if (!string.IsNullOrWhiteSpace(query.SortBy))
             {
                 var sortKey = query.SortDescending ? "TitleDesc" : "TitleAsc";
@@ -81,12 +80,10 @@ namespace FBZ_System.Services
 
         private List<Comic> FilterBase(SearchQuery query)
         {
-            // three focus genres..
             var comics = _repository
             .GetAllComics()
             .ToList();
 
-            // Genre
             if (!string.IsNullOrWhiteSpace(query.Genre))
             {
                 var term = query.Genre.Trim();

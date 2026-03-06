@@ -68,7 +68,6 @@ public class SavedController : Controller
         var userId = _users.GetUserId(User);
         if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
-        // We are not persisting session-import yet (method not implemented) — just clear session list for now.
         _sessionList.Clear(HttpContext);
         return RedirectToAction(nameof(Index));
     }

@@ -74,7 +74,6 @@ public class FlagsController : Controller
         }
         else
         {
-            // keep it simple: update reason + who flagged + timestamp
             existing.StaffUserId = staffUserId;
             existing.Reason = string.IsNullOrWhiteSpace(reason) ? existing.Reason : reason.Trim();
             existing.CreatedUtc = DateTime.UtcNow;

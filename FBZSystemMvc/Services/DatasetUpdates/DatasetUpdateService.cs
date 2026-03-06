@@ -59,7 +59,6 @@ public class DatasetUpdateService : IDatasetUpdateService
             status.LastCheckedUtc = DateTime.UtcNow;
             status.LastError = null;
 
-            // Download ZIP to temp
             var zipTemp = Path.Combine(Path.GetTempPath(), $"fbz_dataset_{Guid.NewGuid():N}.zip");
             var csvTempDir = Path.Combine(Path.GetTempPath(), $"fbz_dataset_{Guid.NewGuid():N}");
             Directory.CreateDirectory(csvTempDir);
@@ -87,7 +86,6 @@ public class DatasetUpdateService : IDatasetUpdateService
                     return (false, "No change detected (same ZIP hash).");
                 }
 
-                // Extract names.csv (case-insensitive)
                 using (var zip = ZipFile.OpenRead(zipTemp))
                 {
                     var entry = zip.Entries.FirstOrDefault(e =>
@@ -99,15 +97,12 @@ public class DatasetUpdateService : IDatasetUpdateService
                     entry.ExtractToFile(csvTempPath, overwrite: true);
                 }
 
-                // Validate by attempting to load it with your existing CSV repository
-                // ComicRepositoryCsv expects names.csv in a folder.
                 var validator = new ComicRepositoryCsv(csvTempDir);
                 var count = validator.GetAllComics().Count;
 
                 if (count < _options.Value.MinComicsExpected)
                     throw new InvalidOperationException($"Validation failed: only {count} comics loaded from new CSV.");
 
-                // Swap in-place (backup old)
                 if (File.Exists(LocalCsvPath))
                 {
                     var backup = Path.Combine(_reloadable.DataFolderPath, $"names_backup_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
@@ -116,7 +111,6 @@ public class DatasetUpdateService : IDatasetUpdateService
 
                 File.Copy(csvTempPath, LocalCsvPath, overwrite: true);
 
-                // Hot reload in memory (no downtime)
                 _reloadable.Reload();
 
                 status.CurrentZipSha256 = newHash;

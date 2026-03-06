@@ -25,7 +25,6 @@ namespace FBZ_System.Domain
         public string Edition { get; set; } = string.Empty;
         public string NameType { get; set; } = string.Empty;
 
-        // Strategy choices
         // e.g. SortBy = "Title", SortDescending = true/false
         public string SortBy { get; set; } = "Title";
         public bool SortDescending { get; set; } = false;
@@ -38,15 +37,11 @@ namespace FBZ_System.Domain
         public int PageSize { get; set; } = 50;
     }
 
-    /// <summary>
-    /// The result of running a query.
-    /// </summary>
     public sealed class SearchResult
     {
         public SearchQuery Query { get; }
         public List<Comic> Comics { get; }
 
-        // Parameterless ctor for serializers / designers, keeps the analyser happy
         public SearchResult()
         {
             Query = new SearchQuery();

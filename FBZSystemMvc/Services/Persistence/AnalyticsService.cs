@@ -12,7 +12,6 @@ public class AnalyticsService : IAnalyticsService
 {
     private readonly ApplicationDbContext _db;
 
-    // cap to avoid huge writes for very broad searches
     private const int MaxComicsToCountPerSearch = 200;
 
     public AnalyticsService(ApplicationDbContext db)
@@ -25,7 +24,6 @@ public class AnalyticsService : IAnalyticsService
         // prevent paging from inflating analytics
         if (query.Page > 1) return;
 
-        // don't record "browse everything" loads (optional but recommended)
         if (!HasAnyFilter(query)) return;
 
         var signature = NormalizeQuery(query);
@@ -53,7 +51,6 @@ public class AnalyticsService : IAnalyticsService
             Truncated = truncated
         });
 
-        // QueryStat upsert
         var qs = _db.QueryStats.FirstOrDefault(x => x.Signature == signature);
         if (qs == null)
         {
@@ -70,7 +67,6 @@ public class AnalyticsService : IAnalyticsService
             qs.LastSeenUtc = DateTime.UtcNow;
         }
 
-        // ComicResultStat upsert (batch)
         var existing = _db.ComicResultStats
             .Where(x => counted.Contains(x.ComicId))
             .ToList()
@@ -105,7 +101,6 @@ public class AnalyticsService : IAnalyticsService
 
     public List<(string Query, int Count)> GetTopQueries(int take = 10)
     {
-        // project to anon first (EF-friendly), then convert to tuples in memory
         var rows = _db.QueryStats
             .OrderByDescending(x => x.Count)
             .Take(take)
@@ -159,8 +154,6 @@ public class AnalyticsService : IAnalyticsService
     {
         static string clean(string? s) => (s ?? "").Trim().ToLowerInvariant();
 
-        // IMPORTANT: do NOT include fields your SearchQuery doesn't have (e.g. Topic)
-        // Also exclude paging/sort/group so the same search counts as one query.
         return string.Join(" | ", new[]
         {
             $"title={clean(q.TitleContains)}",

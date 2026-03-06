@@ -43,13 +43,10 @@ public class DatasetController : Controller
     {
         query ??= new SearchQuery();
 
-        // Run the search (full result set)
         var result = _search.AdvancedSearch(query);
 
-        // Record analytics (only counts page 1 inside the service)
         _analytics.RecordSearch(query, result.Comics, User);
 
-        // Session search list
         var ids = _list.GetIds(HttpContext);
         var all = _repo.GetAllComics().ToList();
 
@@ -59,7 +56,7 @@ public class DatasetController : Controller
             .Cast<Comic>()
             .ToList();
 
-        // Paging
+        // Ppaaging
         var page = result.Query.Page <= 0 ? 1 : result.Query.Page;
         var pageSize = result.Query.PageSize <= 0 ? 50 : result.Query.PageSize;
 
@@ -92,7 +89,7 @@ public class DatasetController : Controller
             AllContentTypes = _repo.GetAllContentTypes().ToList(),
         };
 
-        // Grouping (uses the *paged* results here)
+        // grouping
         vm.GroupedResults = _search.GroupResults(result.Query, paged);
 
         vm.AllNameTypes = _repo.GetAllNameTypes().ToList();

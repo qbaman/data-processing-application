@@ -12,11 +12,11 @@ public class SearchAnalyticsEvent
     [Required]
     public string QuerySignature { get; set; } = default!;
 
-    public string? UserId { get; set; } // null allowed (public users)
+    public string? UserId { get; set; } 
 
     public int TotalResults { get; set; }
 
-    public int CountedResults { get; set; } // capped count we recorded
+    public int CountedResults { get; set; }
 
-    public bool Truncated { get; set; } // true if capped
+    public bool Truncated { get; set; }
 }

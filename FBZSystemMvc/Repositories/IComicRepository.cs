@@ -3,9 +3,8 @@ using FBZ_System.Domain;
 
 namespace FBZ_System.Repositories
 {
-    public interface IComicRepository // ONLY DEALS WITH COMIC DATA METHODS. ISP
+    public interface IComicRepository
     {
-        //  read-only lists of Comic
         IReadOnlyList<Comic> GetAllComics();
 
         IEnumerable<string> GetAllGenres();
