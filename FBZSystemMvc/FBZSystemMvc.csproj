@@ -38,4 +38,11 @@
   <Content Remove="FBZSystemMvc.UITests/**/*" />
 </ItemGroup>
 
+<ItemGroup>
+  <Content Include="Procfile">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
+
 </Project>

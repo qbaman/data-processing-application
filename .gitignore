@@ -372,3 +372,6 @@ FodyWeavers.xsd.DS_Store
 **/*.tfstate
 **/*.tfstate.*
 **/.terraform.lock.hcl
+
+# App runtime status files
+FBZSystemMvc/Data/dataset_update_status.json
