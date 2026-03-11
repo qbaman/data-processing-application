@@ -75,6 +75,9 @@ builder.Services.AddHostedService<DatasetUpdateHostedService>();
 var app = builder.Build();
 
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
+
 // ✅ APPLY MIGRATIONS + SEED STAFF ROLE
 using (var scope = app.Services.CreateScope())
 {
