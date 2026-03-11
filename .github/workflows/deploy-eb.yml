@@ -1,0 +1,63 @@
+name: CI-CD Elastic Beanstalk
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore FBZSystemMvc/FBZSystemMvc.csproj
+
+      - name: Build
+        run: dotnet build FBZSystemMvc/FBZSystemMvc.csproj -c Release --no-restore
+
+      - name: Test
+        run: dotnet test FBZSystemMvc/FBZSystemMvc.Tests/FBZSystemMvc.Tests.csproj -c Release --no-build
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build_test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Publish
+        run: dotnet publish FBZSystemMvc/FBZSystemMvc.csproj -c Release -o publish
+
+      - name: Zip artifact
+        run: cd publish && zip -r ../deploy.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AAKIASKHN4MWMJJ6KHAVX }}
+          aws-secret-access-key: ${{ secrets.oP1kYNgGZbvaeqGVhpmC8Aqd+nx/+mWAKiwJ3vuP }}
+          aws-region: us-east-1
+
+      - name: Deploy to Elastic Beanstalk
+        uses: aws-actions/aws-elasticbeanstalk-deploy@v1
+        with:
+          application_name: fbzsystemmvc
+          environment_name: fbzsystemmvc-env
+          version_label: ${{ github.sha }}
+          region: us-east-1
+          deployment_package: deploy.zip

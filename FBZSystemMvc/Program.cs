@@ -131,6 +131,8 @@ app.MapControllerRoute(
 
 app.MapRazorPages();
 
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
 app.Run();
 
 public partial class Program { } // for integration testing access to the Program class
