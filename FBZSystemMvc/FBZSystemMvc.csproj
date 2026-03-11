@@ -45,4 +45,19 @@
   </Content>
 </ItemGroup>
 
+<ItemGroup>
+  <Content Include="Data/**">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
+
+<ItemGroup>
+  <Content Include="..\Data\names.csv">
+    <Link>Data\names.csv</Link>
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
+
 </Project>
