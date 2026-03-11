@@ -69,3 +69,10 @@ jobs:
           aws elasticbeanstalk update-environment \
             --environment-name fbzsystemmvc-env \
             --version-label ${{ github.sha }}
+
+      - name: Verify dataset in publish output
+        run: |
+            ls -la publish || true
+            ls -la publish/Data || true
+            test -f publish/Data/names.csv
+            
