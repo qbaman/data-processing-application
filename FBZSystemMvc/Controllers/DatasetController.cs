@@ -23,6 +23,7 @@ public class DatasetController : Controller
     private readonly ComicFormatter _formatter;
     private readonly IAnalyticsService _analytics;
     private readonly IGoogleBooksService _googleBooks;
+    private readonly IOpenLibraryService _openLibrary;
 
     public DatasetController(
         ISearchService search,
@@ -31,7 +32,8 @@ public class DatasetController : Controller
         ComicFormatter formatter,
         ApplicationDbContext db,
         IAnalyticsService analytics,
-        IGoogleBooksService googleBooks)
+        IGoogleBooksService googleBooks,
+        IOpenLibraryService openLibrary)
     {
         _search = search;
         _repo = repo;
@@ -40,6 +42,7 @@ public class DatasetController : Controller
         _db = db;
         _analytics = analytics;
         _googleBooks = googleBooks;
+        _openLibrary = openLibrary;
     }
 
     [HttpGet]
@@ -199,6 +202,7 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
     vm.FlagReason = flag?.Reason;
 
     vm.GoogleBooks = await _googleBooks.LookupAsync(comic, cancellationToken);
+    vm.OpenLibrary = await _openLibrary.LookupAsync(comic, cancellationToken);
 
     var firstValidIsbn = vm.IsbnsDisplay
         .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && i.Trim().ToLower() != "missing");

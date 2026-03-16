@@ -152,3 +152,46 @@
         </div>
     </div>
 }
+
+@if (Model.OpenLibrary?.HasData == true)
+{
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Additional Library Data (Open Library)</h5>
+
+            <dl class="row">
+
+                @if (!string.IsNullOrWhiteSpace(Model.OpenLibrary.Title))
+                {
+                    <dt class="col-sm-3">Matched title</dt>
+                    <dd class="col-sm-9">@Model.OpenLibrary.Title</dd>
+                }
+
+                @if (Model.OpenLibrary.FirstPublishYear.HasValue)
+                {
+                    <dt class="col-sm-3">First publish year</dt>
+                    <dd class="col-sm-9">@Model.OpenLibrary.FirstPublishYear</dd>
+                }
+
+                @if (Model.OpenLibrary.AuthorNames?.Count > 0)
+                {
+                    <dt class="col-sm-3">Authors</dt>
+                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.AuthorNames)</dd>
+                }
+
+                @if (Model.OpenLibrary.Subjects?.Count > 0)
+                {
+                    <dt class="col-sm-3">Subjects</dt>
+                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.Subjects)</dd>
+                }
+
+                @if (Model.OpenLibrary.Isbns?.Count > 0)
+                {
+                    <dt class="col-sm-3">Related ISBNs</dt>
+                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.Isbns)</dd>
+                }
+
+            </dl>
+        </div>
+    </div>
+}

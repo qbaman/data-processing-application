@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using FBZSystemMvc.Services.DatasetUpdates;
 using FBZSystemMvc.Services.ExternalApis;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC + Razor Pages (Identity UI uses Razor Pages)
@@ -70,6 +71,7 @@ builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
 
 builder.Services.AddHttpClient("dataset");
 builder.Services.AddHttpClient<IGoogleBooksService, GoogleBooksService>();
+builder.Services.AddHttpClient<IOpenLibraryService, OpenLibraryService>();
 
 builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));
 builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();

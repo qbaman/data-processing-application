@@ -17,6 +17,7 @@ public class ComicDetailsViewModel
 
     public bool IsFlagged { get; set; }
     public string? FlagReason { get; set; }
-
     public GoogleBooksLookupResult? GoogleBooks { get; set; }
+    public string? OpenLibraryCoverUrl { get; set; }
+    public OpenLibraryLookupResult? OpenLibrary { get; set; }
 }
