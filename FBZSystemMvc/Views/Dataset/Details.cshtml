@@ -74,3 +74,67 @@
         </div>
     </div>
 }
+
+@if (Model.GoogleBooks?.HasData == true)
+{
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">External Book Info (Google Books)</h5>
+
+            <dl class="row mb-0">
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Title))
+                {
+                    <dt class="col-sm-3">Matched title</dt>
+                    <dd class="col-sm-9">@Model.GoogleBooks.Title</dd>
+                }
+
+                @if (Model.GoogleBooks.Authors?.Count > 0)
+                {
+                    <dt class="col-sm-3">Matched authors</dt>
+                    <dd class="col-sm-9">@string.Join(", ", Model.GoogleBooks.Authors)</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Publisher))
+                {
+                    <dt class="col-sm-3">Publisher</dt>
+                    <dd class="col-sm-9">@Model.GoogleBooks.Publisher</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PublishedDate))
+                {
+                    <dt class="col-sm-3">Published date</dt>
+                    <dd class="col-sm-9">@Model.GoogleBooks.PublishedDate</dd>
+                }
+
+                @if (Model.GoogleBooks.PageCount.HasValue)
+                {
+                    <dt class="col-sm-3">Page count</dt>
+                    <dd class="col-sm-9">@Model.GoogleBooks.PageCount</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Description))
+                {
+                    <dt class="col-sm-3">Description</dt>
+                    <dd class="col-sm-9">@Model.GoogleBooks.Description</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PreviewLink) ||
+                     !string.IsNullOrWhiteSpace(Model.GoogleBooks.InfoLink))
+                {
+                    <dt class="col-sm-3">Links</dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PreviewLink))
+                        {
+                            <a href="@Model.GoogleBooks.PreviewLink" target="_blank" rel="noopener noreferrer" class="me-3">Preview</a>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.InfoLink))
+                        {
+                            <a href="@Model.GoogleBooks.InfoLink" target="_blank" rel="noopener noreferrer">More info</a>
+                        }
+                    </dd>
+                }
+            </dl>
+        </div>
+    </div>
+}

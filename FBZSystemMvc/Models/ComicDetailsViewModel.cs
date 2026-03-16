@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FBZ_System.Domain;
+using FBZSystemMvc.Services.ExternalApis;
 
 namespace FBZSystemMvc.Models;
 
@@ -16,4 +17,6 @@ public class ComicDetailsViewModel
 
     public bool IsFlagged { get; set; }
     public string? FlagReason { get; set; }
+
+    public GoogleBooksLookupResult? GoogleBooks { get; set; }
 }

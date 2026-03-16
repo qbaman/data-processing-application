@@ -7,6 +7,7 @@ using FBZSystemMvc.Persistence;
 using FBZSystemMvc.Services.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using FBZSystemMvc.Services.DatasetUpdates;
+using FBZSystemMvc.Services.ExternalApis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,7 @@ builder.Services
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>(); 
 
-// ✅ FIX LOGIN REDIRECT PATH
+// FIX LOGIN REDIRECT PATH
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -68,9 +69,12 @@ builder.Services.AddSession();
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
 
 builder.Services.AddHttpClient("dataset");
+builder.Services.AddHttpClient<IGoogleBooksService, GoogleBooksService>();
+
 builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));
 builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();
 builder.Services.AddHostedService<DatasetUpdateHostedService>();
+
 
 var app = builder.Build();
 

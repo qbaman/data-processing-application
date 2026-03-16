@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using FBZSystemMvc.Persistence;
 using FBZSystemMvc.Services.Persistence;
 using Microsoft.AspNetCore.Routing;
+using FBZSystemMvc.Services.ExternalApis;
 
 namespace FBZSystemMvc.Controllers;
 
@@ -21,6 +22,7 @@ public class DatasetController : Controller
     private readonly SearchListStore _list;
     private readonly ComicFormatter _formatter;
     private readonly IAnalyticsService _analytics;
+    private readonly IGoogleBooksService _googleBooks;
 
     public DatasetController(
         ISearchService search,
@@ -28,7 +30,8 @@ public class DatasetController : Controller
         SearchListStore list,
         ComicFormatter formatter,
         ApplicationDbContext db,
-        IAnalyticsService analytics)
+        IAnalyticsService analytics,
+        IGoogleBooksService googleBooks)
     {
         _search = search;
         _repo = repo;
@@ -36,6 +39,7 @@ public class DatasetController : Controller
         _formatter = formatter;
         _db = db;
         _analytics = analytics;
+        _googleBooks = googleBooks;
     }
 
     [HttpGet]
@@ -169,33 +173,35 @@ public class DatasetController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    [HttpGet]
-    public IActionResult Details(string id)
+[HttpGet]
+public async Task<IActionResult> Details(string id, CancellationToken cancellationToken)
+{
+    if (string.IsNullOrWhiteSpace(id))
+        return RedirectToAction(nameof(Index));
+
+    var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
+    if (comic is null)
+        return RedirectToAction(nameof(Index));
+
+    var vm = new ComicDetailsViewModel
     {
-        if (string.IsNullOrWhiteSpace(id))
-            return RedirectToAction(nameof(Index));
+        Comic = comic,
+        AuthorsDisplay = comic.Authors?.Distinct().OrderBy(a => a).ToList() ?? new(),
+        GenresDisplay = comic.Genres?.Distinct().OrderBy(g => g).ToList() ?? new(),
+        YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new List<int>(),
+        IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
+    };
 
-        var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
-        if (comic is null)
-            return RedirectToAction(nameof(Index));
+    vm.InfoLines = _formatter.BuildInfoLines(comic);
 
-        var vm = new ComicDetailsViewModel
-        {
-            Comic = comic,
-            AuthorsDisplay = comic.Authors?.Distinct().OrderBy(a => a).ToList() ?? new(),
-            GenresDisplay = comic.Genres?.Distinct().OrderBy(g => g).ToList() ?? new(),
-            YearsDisplay = comic.Years?.Distinct().OrderBy(y => y).ToList() ?? new List<int>(),
-            IsbnsDisplay = (comic.Isbns ?? new()).Select(i => string.IsNullOrWhiteSpace(i) ? "missing" : i).Distinct().ToList()
-        };
+    var flag = _db.FlaggedComics.AsNoTracking().FirstOrDefault(f => f.ComicId == id);
+    vm.IsFlagged = flag != null;
+    vm.FlagReason = flag?.Reason;
 
-        vm.InfoLines = _formatter.BuildInfoLines(comic);
+    vm.GoogleBooks = await _googleBooks.LookupAsync(comic, cancellationToken);
 
-        var flag = _db.FlaggedComics.AsNoTracking().FirstOrDefault(f => f.ComicId == id);
-        vm.IsFlagged = flag != null;
-        vm.FlagReason = flag?.Reason;
-
-        return View(vm);
-    }
+    return View(vm);
+}
 
     public IActionResult Exit()
     {
