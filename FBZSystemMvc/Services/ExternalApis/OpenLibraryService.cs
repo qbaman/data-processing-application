@@ -53,13 +53,21 @@ public class OpenLibraryService : IOpenLibraryService
             if (doc is null)
                 return null;
 
+            string? coverUrl = null;
+
+            if (doc.CoverI.HasValue)
+            {
+                coverUrl = $"https://covers.openlibrary.org/b/id/{doc.CoverI.Value}-L.jpg?default=false";
+            }
+
             return new OpenLibraryLookupResult
             {
                 Title = doc.Title,
                 FirstPublishYear = doc.FirstPublishYear,
                 AuthorNames = doc.AuthorName?.Take(5).ToList() ?? new List<string>(),
                 Subjects = doc.Subject?.Take(8).ToList() ?? new List<string>(),
-                Isbns = doc.Isbn?.Take(5).ToList() ?? new List<string>()
+                Isbns = doc.Isbn?.Take(5).ToList() ?? new List<string>(),
+                CoverUrl = coverUrl
             };
         }
         catch

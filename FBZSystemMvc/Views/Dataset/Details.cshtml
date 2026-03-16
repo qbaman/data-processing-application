@@ -87,21 +87,39 @@
                     <dt class="col-sm-3">Matched title</dt>
                     <dd class="col-sm-9">@Model.GoogleBooks.Title</dd>
                 }
+            </dl>
 
-                @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
-                {
-                    <div class="card mb-3" style="max-width: 220px;">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Cover</h5>
+            @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
+            {
+                <div class="card mb-3" style="max-width: 220px;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Cover</h5>
 
+                        @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
+                        {
                             <img src="@Model.OpenLibraryCoverUrl"
-                                alt="Comic cover"
+                                alt="Comic cover for @Model.Comic.MainTitle"
                                 class="img-fluid rounded shadow-sm"
-                                onerror="this.replaceWith(document.createTextNode('Cover not available'))" />
-                        </div>
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                            <p class="text-muted mt-2 mb-0" style="display:none;">Cover not available</p>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(Model.OpenLibrary?.CoverUrl))
+                        {
+                            <img src="@Model.OpenLibrary.CoverUrl"
+                                alt="Comic cover for @Model.Comic.MainTitle"
+                                class="img-fluid rounded shadow-sm"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                            <p class="text-muted mt-2 mb-0" style="display:none;">Cover not available</p>
+                        }
+                        else
+                        {
+                            <p class="text-muted mt-2 mb-0">Cover not available</p>
+                        }
                     </div>
-                }
+                </div>
+            }
 
+            <dl class="row mb-0">
                 @if (Model.GoogleBooks.Authors?.Count > 0)
                 {
                     <dt class="col-sm-3">Matched authors</dt>
