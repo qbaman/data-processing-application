@@ -88,6 +88,20 @@
                     <dd class="col-sm-9">@Model.GoogleBooks.Title</dd>
                 }
 
+                @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
+                {
+                    <div class="card mb-3" style="max-width: 220px;">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Cover</h5>
+
+                            <img src="@Model.OpenLibraryCoverUrl"
+                                alt="Comic cover"
+                                class="img-fluid rounded shadow-sm"
+                                onerror="this.replaceWith(document.createTextNode('Cover not available'))" />
+                        </div>
+                    </div>
+                }
+
                 @if (Model.GoogleBooks.Authors?.Count > 0)
                 {
                     <dt class="col-sm-3">Matched authors</dt>

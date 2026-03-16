@@ -200,8 +200,17 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
 
     vm.GoogleBooks = await _googleBooks.LookupAsync(comic, cancellationToken);
 
-    return View(vm);
-}
+    var firstValidIsbn = vm.IsbnsDisplay
+        .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && i.Trim().ToLower() != "missing");
+
+    if (!string.IsNullOrWhiteSpace(firstValidIsbn))
+    {
+        vm.OpenLibraryCoverUrl =
+            $"https://covers.openlibrary.org/b/isbn/{Uri.EscapeDataString(firstValidIsbn)}-L.jpg?default=false";
+    }
+
+        return View(vm);
+    }
 
     public IActionResult Exit()
     {
