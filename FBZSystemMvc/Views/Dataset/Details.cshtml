@@ -214,6 +214,26 @@
     </div>
 }
 
+@{
+    var qrTarget = Model.Wikipedia?.PageUrl
+        ?? Model.GoogleBooks?.InfoLink
+        ?? Model.GoogleBooks?.PreviewLink;
+
+    if (!string.IsNullOrWhiteSpace(qrTarget))
+    {
+        var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(qrTarget)}";
+        <div class="card mt-3" style="max-width: 210px;">
+            <div class="card-body text-center">
+                <h5 class="card-title">Scan to Read More</h5>
+                <img src="@qrUrl" alt="QR code linking to more information about @Model.Comic.MainTitle" class="img-fluid" />
+                <p class="text-muted mt-2 mb-0" style="font-size:0.75rem;">
+                    Links to @(!string.IsNullOrWhiteSpace(Model.Wikipedia?.PageUrl) ? "Wikipedia" : "Google Books")
+                </p>
+            </div>
+        </div>
+    }
+}
+
 @if (Model.Wikipedia?.HasData == true)
 {
     <div class="card mt-3">
