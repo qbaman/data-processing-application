@@ -8,6 +8,8 @@ using FBZSystemMvc.Services.Persistence;
 using Microsoft.AspNetCore.Authentication;
 using FBZSystemMvc.Services.DatasetUpdates;
 using FBZSystemMvc.Services.ExternalApis;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +70,18 @@ builder.Services.AddSingleton<ISearchHistoryService, SearchHistoryService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("dataset", limiter =>
+    {
+        limiter.PermitLimit = 30;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiter.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = 429;
+});
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
 
 builder.Services.AddHttpClient("dataset");
@@ -117,6 +131,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseRateLimiter();
+
 app.UseSession();
 
 app.UseAuthentication();
@@ -140,6 +156,12 @@ app.Use(async (ctx, next) =>
 app.UseAuthorization();
 
 // Routes
+app.MapControllerRoute(
+    name: "dataset",
+    pattern: "Dataset/{action=Index}/{id?}",
+    defaults: new { controller = "Dataset" })
+    .RequireRateLimiting("dataset");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dataset}/{action=Index}/{id?}");

@@ -20,6 +20,12 @@ public class GoogleBooksService : IGoogleBooksService
 
     public async Task<GoogleBooksLookupResult?> LookupAsync(Comic comic, CancellationToken cancellationToken = default)
     {
+        if ((comic.MainTitle?.Trim() ?? string.Empty).Length > 300)
+        {
+            _logger.LogDebug("Skipping Google Books lookup — title exceeds 300 characters for comic '{Id}'", comic.Id);
+            return null;
+        }
+
         try
         {
             var apiKey = _configuration["GoogleBooks:ApiKey"];

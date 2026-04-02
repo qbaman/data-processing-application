@@ -21,6 +21,12 @@ public class WikipediaService : IWikipediaService
         if (string.IsNullOrWhiteSpace(authorName))
             return null;
 
+        if (authorName.Length > 300)
+        {
+            _logger.LogDebug("Skipping Wikipedia lookup — author name exceeds 300 characters");
+            return null;
+        }
+
         try
         {
             var url = $"https://en.wikipedia.org/api/rest_v1/page/summary/{Uri.EscapeDataString(authorName.Trim())}";
