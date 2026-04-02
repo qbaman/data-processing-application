@@ -144,7 +144,6 @@ namespace FBZ_System.Services
                 ).ToList();
             }
 
-            // Title 
             if (!string.IsNullOrWhiteSpace(query.TitleContains))
             {
                 var term = query.TitleContains.Trim();
@@ -161,7 +160,6 @@ namespace FBZ_System.Services
                     .ToList();
             }
 
-            // Author 
             if (!string.IsNullOrWhiteSpace(query.AuthorContains))
             {
                 var term = query.AuthorContains.Trim();
@@ -174,7 +172,6 @@ namespace FBZ_System.Services
                     .ToList();
             }
 
-            //  range
             if (query.YearFrom.HasValue)
             {
                 comics = comics
@@ -191,7 +188,6 @@ namespace FBZ_System.Services
                     .ToList();
             }
 
-            // Lang
             if (!string.IsNullOrWhiteSpace(query.Language))
             {
                 var term = query.Language.Trim();
@@ -204,7 +200,6 @@ namespace FBZ_System.Services
                     .ToList();
             }
 
-            // Edition
             if (!string.IsNullOrWhiteSpace(query.Edition))
             {
                 var term = query.Edition.Trim();
@@ -216,8 +211,6 @@ namespace FBZ_System.Services
                                     e.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0))
                     .ToList();
             }
-
-            // Name type
 
             if (!string.IsNullOrWhiteSpace(query.NameType))
             {

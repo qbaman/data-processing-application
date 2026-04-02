@@ -41,7 +41,7 @@ public class WikipediaService : IWikipediaService
             using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
             var root = doc.RootElement;
 
-            // Only use articles about people, not disambiguation pages
+            // skip disambiguation pages
             if (root.TryGetProperty("type", out var typeEl) && typeEl.GetString() == "disambiguation")
                 return null;
 

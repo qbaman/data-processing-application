@@ -93,7 +93,6 @@ public class SavedListsController : Controller
 
         if (list == null) return NotFound();
 
-        // overwrite session list with this saved list
         _sessionList.Clear(HttpContext);
         foreach (var item in list.Items)
             _sessionList.Add(HttpContext, item.ComicId);

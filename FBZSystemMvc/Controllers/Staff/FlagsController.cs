@@ -32,7 +32,6 @@ public class FlagsController : Controller
             .OrderByDescending(f => f.CreatedUtc)
             .ToList();
 
-        // Map IDs to titles (fallback to ID if missing)
         var comics = _repo.GetAllComics();
         var titleById = comics
             .GroupBy(c => c.Id)

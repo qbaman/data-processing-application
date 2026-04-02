@@ -70,7 +70,6 @@ public class DatasetController : Controller
             .Cast<Comic>()
             .ToList();
 
-        // Ppaaging
         var page = result.Query.Page <= 0 ? 1 : result.Query.Page;
         var pageSize = result.Query.PageSize <= 0 ? 50 : result.Query.PageSize;
 
@@ -103,7 +102,6 @@ public class DatasetController : Controller
             AllContentTypes = _repo.GetAllContentTypes().ToList(),
         };
 
-        // grouping
         vm.GroupedResults = _search.GroupResults(result.Query, paged);
 
         vm.AllNameTypes = _repo.GetAllNameTypes().ToList();
@@ -179,7 +177,7 @@ public class DatasetController : Controller
 
     public IActionResult Finish()
     {
-        _list.Clear(HttpContext);           // clears the session search list
+        _list.Clear(HttpContext);
         return RedirectToAction("Index", "Home");
     }
 
@@ -221,7 +219,7 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
     var firstAuthor = comic.Authors?.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a));
     if (firstAuthor is not null)
     {
-        // Dataset stores names as "Lastname, Firstname" — reverse to "Firstname Lastname" for Wikipedia
+        // reverse "Lastname, Firstname" for Wikipedia
         var parts = firstAuthor.Split(',', 2);
         var authorForWikipedia = parts.Length == 2
             ? $"{parts[1].Trim()} {parts[0].Trim()}"
