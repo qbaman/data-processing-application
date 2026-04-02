@@ -1,6 +1,57 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<h1>Privacy Policy</h1>
+<p class="text-muted">Last updated: April 2026</p>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">What data we collect</h5>
+        <ul class="mb-0">
+            <li><strong>Account data</strong> — if you register, we store your email address and a hashed (never plain-text) password in our SQLite database.</li>
+            <li><strong>Search analytics</strong> — search queries and which results were returned are recorded anonymously to power the staff analytics dashboard.</li>
+            <li><strong>Saved lists</strong> — if you are logged in and save a search list, the comic IDs in that list are stored against your account.</li>
+            <li><strong>Session data</strong> — a temporary session cookie keeps your in-progress search list alive while you browse. It is cleared when you click Finish / Exit or log out.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">External APIs we call</h5>
+        <p class="mb-2">When you view a comic detail page, the application makes server-side requests to the following third-party APIs. <strong>No personal data is sent</strong> — only the comic title, author, or ISBN.</p>
+        <ul class="mb-0">
+            <li><strong>Google Books API</strong> — retrieves book metadata (publisher, description, preview link).</li>
+            <li><strong>Open Library API (Internet Archive)</strong> — retrieves cover images, subjects, and publication data.</li>
+            <li><strong>Wikipedia REST API</strong> — retrieves a short author biography and thumbnail.</li>
+        </ul>
+        <p class="mt-2 mb-0 text-muted" style="font-size:0.9rem;">Each third party has its own privacy policy. Results are cached in server memory for up to one hour to minimise unnecessary API calls.</p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">What we do not do</h5>
+        <ul class="mb-0">
+            <li>We do not sell or share your data with any third party.</li>
+            <li>We do not use tracking cookies or advertising networks.</li>
+            <li>We do not store plain-text passwords — Identity hashes all passwords before saving.</li>
+            <li>API keys are stored in environment variables / server configuration, never in source code.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Data retention</h5>
+        <p class="mb-0">Account data and saved lists are retained until you delete your account. Anonymous search analytics are retained indefinitely to support the analytics dashboard. Session data is discarded at the end of your browser session.</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Dataset</h5>
+        <p class="mb-0">The comic dataset used by this application is the British Library <em>Comics Unmasked</em> dataset, released under <strong>CC0 1.0 Universal (Public Domain)</strong>. The British Library does not endorse this application.</p>
+    </div>
+</div>

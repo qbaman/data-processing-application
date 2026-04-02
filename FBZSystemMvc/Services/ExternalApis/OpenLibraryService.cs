@@ -1,15 +1,18 @@
 using System.Text.Json;
 using FBZ_System.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace FBZSystemMvc.Services.ExternalApis;
 
 public class OpenLibraryService : IOpenLibraryService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<OpenLibraryService> _logger;
 
-    public OpenLibraryService(HttpClient httpClient)
+    public OpenLibraryService(HttpClient httpClient, ILogger<OpenLibraryService> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
         _httpClient.Timeout = TimeSpan.FromSeconds(10);
     }
 
@@ -70,8 +73,9 @@ public class OpenLibraryService : IOpenLibraryService
                 CoverUrl = coverUrl
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Open Library lookup failed for comic '{Title}'", comic.MainTitle);
             return null;
         }
     }

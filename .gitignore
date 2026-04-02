@@ -375,3 +375,5 @@ FodyWeavers.xsd.DS_Store
 
 # App runtime status files
 FBZSystemMvc/Data/dataset_update_status.json
+# Local dev secrets — never commit API keys
+FBZSystemMvc/appsettings.Development.json

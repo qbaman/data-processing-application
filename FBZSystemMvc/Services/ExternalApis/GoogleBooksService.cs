@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FBZ_System.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace FBZSystemMvc.Services.ExternalApis;
 
@@ -7,11 +8,13 @@ public class GoogleBooksService : IGoogleBooksService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<GoogleBooksService> _logger;
 
-    public GoogleBooksService(HttpClient httpClient, IConfiguration configuration)
+    public GoogleBooksService(HttpClient httpClient, IConfiguration configuration, ILogger<GoogleBooksService> logger)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _logger = logger;
         _httpClient.Timeout = TimeSpan.FromSeconds(10);
     }
 
@@ -76,8 +79,9 @@ public class GoogleBooksService : IGoogleBooksService
                 InfoLink = volume.InfoLink
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Google Books lookup failed for comic '{Title}'", comic.MainTitle);
             return null;
         }
     }

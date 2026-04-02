@@ -26,9 +26,12 @@ internal class OpenLibrarySearchResponse
 internal class OpenLibraryDoc
 {
     public string? Title { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("first_publish_year")]
     public int? FirstPublishYear { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("author_name")]
     public List<string>? AuthorName { get; set; }
     public List<string>? Subject { get; set; }
     public List<string>? Isbn { get; set; }
+    [System.Text.Json.Serialization.JsonPropertyName("cover_i")]
     public int? CoverI { get; set; }
 }

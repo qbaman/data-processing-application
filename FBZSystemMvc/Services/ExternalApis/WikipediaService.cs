@@ -1,14 +1,17 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace FBZSystemMvc.Services.ExternalApis;
 
 public class WikipediaService : IWikipediaService
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<WikipediaService> _logger;
 
-    public WikipediaService(HttpClient httpClient)
+    public WikipediaService(HttpClient httpClient, ILogger<WikipediaService> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
         _httpClient.Timeout = TimeSpan.FromSeconds(10);
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("FBZSystemMvc/1.0 (educational project)");
     }
@@ -61,8 +64,9 @@ public class WikipediaService : IWikipediaService
                 PageUrl = pageUrl
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Wikipedia lookup failed for author '{Author}'", authorName);
             return null;
         }
     }

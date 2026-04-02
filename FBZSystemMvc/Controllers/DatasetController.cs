@@ -11,6 +11,7 @@ using FBZSystemMvc.Persistence;
 using FBZSystemMvc.Services.Persistence;
 using Microsoft.AspNetCore.Routing;
 using FBZSystemMvc.Services.ExternalApis;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace FBZSystemMvc.Controllers;
 
@@ -25,6 +26,7 @@ public class DatasetController : Controller
     private readonly IGoogleBooksService _googleBooks;
     private readonly IOpenLibraryService _openLibrary;
     private readonly IWikipediaService _wikipedia;
+    private readonly IMemoryCache _cache;
 
     public DatasetController(
         ISearchService search,
@@ -35,7 +37,8 @@ public class DatasetController : Controller
         IAnalyticsService analytics,
         IGoogleBooksService googleBooks,
         IOpenLibraryService openLibrary,
-        IWikipediaService wikipedia)
+        IWikipediaService wikipedia,
+        IMemoryCache cache)
     {
         _search = search;
         _repo = repo;
@@ -46,6 +49,7 @@ public class DatasetController : Controller
         _googleBooks = googleBooks;
         _openLibrary = openLibrary;
         _wikipedia = wikipedia;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -204,8 +208,15 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
     vm.IsFlagged = flag != null;
     vm.FlagReason = flag?.Reason;
 
-    vm.GoogleBooks = await _googleBooks.LookupAsync(comic, cancellationToken);
-    vm.OpenLibrary = await _openLibrary.LookupAsync(comic, cancellationToken);
+    var cacheOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(1));
+
+    vm.GoogleBooks = await _cache.GetOrCreateAsync($"gb:{id}", _ =>
+        _googleBooks.LookupAsync(comic, cancellationToken));
+    if (vm.GoogleBooks is not null) _cache.Set($"gb:{id}", vm.GoogleBooks, cacheOptions);
+
+    vm.OpenLibrary = await _cache.GetOrCreateAsync($"ol:{id}", _ =>
+        _openLibrary.LookupAsync(comic, cancellationToken));
+    if (vm.OpenLibrary is not null) _cache.Set($"ol:{id}", vm.OpenLibrary, cacheOptions);
 
     var firstAuthor = comic.Authors?.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a));
     if (firstAuthor is not null)
@@ -215,7 +226,10 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
         var authorForWikipedia = parts.Length == 2
             ? $"{parts[1].Trim()} {parts[0].Trim()}"
             : firstAuthor.Trim();
-        vm.Wikipedia = await _wikipedia.LookupAuthorAsync(authorForWikipedia, cancellationToken);
+
+        vm.Wikipedia = await _cache.GetOrCreateAsync($"wiki:{authorForWikipedia}", _ =>
+            _wikipedia.LookupAuthorAsync(authorForWikipedia, cancellationToken));
+        if (vm.Wikipedia is not null) _cache.Set($"wiki:{authorForWikipedia}", vm.Wikipedia, cacheOptions);
     }
 
     var firstValidIsbn = vm.IsbnsDisplay

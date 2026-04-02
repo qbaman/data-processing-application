@@ -65,6 +65,7 @@ builder.Services.AddSingleton<ISearchService, SearchService>();
 builder.Services.AddSingleton<ComicFormatter>();
 builder.Services.AddSingleton<ISearchHistoryService, SearchHistoryService>();
 
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
