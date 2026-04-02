@@ -171,6 +171,19 @@
     </div>
 }
 
+@{
+    var pageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(pageUrl)}";
+}
+
+<div class="card mt-3" style="max-width: 220px;">
+    <div class="card-body text-center">
+        <h5 class="card-title">QR Code</h5>
+        <img src="@qrUrl" alt="QR code linking to this page" class="img-fluid" />
+        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Scan to open this page</p>
+    </div>
+</div>
+
 @if (Model.OpenLibrary?.HasData == true)
 {
     <div class="card mt-3">
