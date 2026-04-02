@@ -209,7 +209,14 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
 
     var firstAuthor = comic.Authors?.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a));
     if (firstAuthor is not null)
-        vm.Wikipedia = await _wikipedia.LookupAuthorAsync(firstAuthor, cancellationToken);
+    {
+        // Dataset stores names as "Lastname, Firstname" — reverse to "Firstname Lastname" for Wikipedia
+        var parts = firstAuthor.Split(',', 2);
+        var authorForWikipedia = parts.Length == 2
+            ? $"{parts[1].Trim()} {parts[0].Trim()}"
+            : firstAuthor.Trim();
+        vm.Wikipedia = await _wikipedia.LookupAuthorAsync(authorForWikipedia, cancellationToken);
+    }
 
     var firstValidIsbn = vm.IsbnsDisplay
         .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && i.Trim().ToLower() != "missing");
