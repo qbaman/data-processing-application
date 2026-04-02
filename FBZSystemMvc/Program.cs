@@ -11,10 +11,8 @@ using FBZSystemMvc.Services.ExternalApis;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// MVC + Razor Pages (Identity UI uses Razor Pages)
 builder.Services.AddControllersWithViews()
     .AddRazorOptions(o =>
     {
@@ -22,7 +20,7 @@ builder.Services.AddControllersWithViews()
     });
 builder.Services.AddRazorPages();
 
-// SQLite + EF Core + Identity (with Roles)
+// database + identity
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -32,16 +30,15 @@ builder.Services
         options.SignIn.RequireConfirmedAccount = false;
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>(); 
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// FIX LOGIN REDIRECT PATH
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
-// Your existing app services
+// repositories
 builder.Services.AddSingleton<IComicRepository>(sp =>
 {
     var env = sp.GetRequiredService<IWebHostEnvironment>();
@@ -49,10 +46,10 @@ builder.Services.AddSingleton<IComicRepository>(sp =>
     return new ReloadableComicRepository(dataPath);
 });
 
-// expose the same singleton as IDatasetReloadable
 builder.Services.AddSingleton<IDatasetReloadable>(sp =>
     (IDatasetReloadable)sp.GetRequiredService<IComicRepository>());
 
+// services
 builder.Services.AddScoped<FBZSystemMvc.Services.Persistence.IAnalyticsService, FBZSystemMvc.Services.Persistence.AnalyticsService>();
 builder.Services.AddScoped<FBZSystemMvc.Services.Persistence.ISavedComicsService, FBZSystemMvc.Services.Persistence.SavedComicsService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
@@ -71,6 +68,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
+// rate limiting — 30 requests/min per IP on /Dataset
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("dataset", limiter =>
@@ -82,28 +80,29 @@ builder.Services.AddRateLimiter(options =>
     });
     options.RejectionStatusCode = 429;
 });
+
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
 
+// external API clients
 builder.Services.AddHttpClient("dataset");
 builder.Services.AddHttpClient<IGoogleBooksService, GoogleBooksService>();
 builder.Services.AddHttpClient<IOpenLibraryService, OpenLibraryService>();
+builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
+builder.Services.AddHttpClient<IWikipediaService, WikipediaService>();
 
+// dataset update
 builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));
 builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();
 builder.Services.AddHostedService<DatasetUpdateHostedService>();
 
-builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
-builder.Services.AddHttpClient<IWikipediaService, WikipediaService>();
-
 var app = builder.Build();
 
-
-// Only override the URL when EB sets PORT; locally launchSettings.json controls the port.
+// EB port binding
 var ebPort = Environment.GetEnvironmentVariable("PORT");
 if (ebPort is not null)
     app.Urls.Add($"http://0.0.0.0:{ebPort}");
 
-// ✅ APPLY MIGRATIONS + SEED STAFF ROLE
+// migrations + seed Staff role
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -117,24 +116,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-// Middleware order
-// Note: UseHttpsRedirection is intentionally omitted — EB terminates TLS at
-// the load balancer and forwards plain HTTP to the app. Redirecting to HTTPS
-// here would cause an infinite redirect loop and a 502.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseRateLimiter();
-
 app.UseSession();
-
 app.UseAuthentication();
 
 app.Use(async (ctx, next) =>
@@ -155,7 +146,6 @@ app.Use(async (ctx, next) =>
 
 app.UseAuthorization();
 
-// Routes
 app.MapControllerRoute(
     name: "dataset",
     pattern: "Dataset/{action=Index}/{id?}",
@@ -172,4 +162,4 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.Run();
 
-public partial class Program { } // for integration testing access to the Program class
+public partial class Program { } // for integration tests
