@@ -5,7 +5,7 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 
 ---
 
-## Features
+## ✨ Features
 
 | Area | Highlights |
 |------|-----------|
@@ -19,7 +19,7 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 
 ---
 
-## External API Integrations
+## 🌐 External API Integrations
 
 Each comic detail page is enriched with live data from the following APIs:
 
@@ -35,7 +35,7 @@ Each comic detail page is enriched with live data from the following APIs:
 
 ---
 
-## Security
+## 🔒 Security
 
 - All string search inputs capped at 200 characters; `PageSize` clamped to 100
 - External API calls skipped if title or author name exceeds 300 characters
@@ -77,7 +77,7 @@ All staff routes require the `Staff` role.
 
 ---
 
-## CI/CD Pipeline
+## 🚀 CI/CD Pipeline
 
 Every push to `main` triggers:
 
@@ -95,7 +95,7 @@ Infrastructure is defined in `infra/terraform/` (AWS, us-east-1, t3.micro, .NET 
 
 ---
 
-## Run Locally
+## ▶️ Run Locally
 
 **Prerequisites:** .NET 9 SDK
 
@@ -119,7 +119,7 @@ Open `http://localhost:5236` in your browser.
 
 ---
 
-## Automated Tests
+## 🧪 Automated Tests
 
 ```bash
 dotnet test FBZSystemMvc.Tests/FBZSystemMvc.Tests.csproj
@@ -169,7 +169,7 @@ infra/terraform/          AWS infrastructure definitions
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
