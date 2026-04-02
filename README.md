@@ -10,7 +10,7 @@
 | Area | Highlights |
 |------|-----------|
 | 🔍 **Search** | Title, author, genre, year range, language, edition, resource type, content type |
-| 📚 **External APIs** | Google Books · Open Library · Comic Vine · QR Code |
+| 📚 **External APIs** | Google Books · Open Library · Comic Vine · Wikipedia |
 | 👤 **Accounts** | Register / Login / Logout via ASP.NET Core Identity |
 | 💾 **Saved Lists** | Persist search results across sessions in SQLite |
 | 🛡️ **Staff Tools** | Flag records, analytics dashboard, dataset updates |
@@ -32,8 +32,8 @@ Fetches cover art, first publish year, subjects, and related ISBNs from the Inte
 ### 🦸 Comic Vine
 Looks up comic-specific metadata including publisher, deck summary, and series information.
 
-### 📱 QR Code *(api.qrserver.com)*
-Generates a scannable QR code for every detail page on-the-fly — no API key required. Scan it with a phone to instantly open the same comic.
+### 📖 Wikipedia
+Looks up the comic's first author on the Wikipedia REST API (`/api/rest_v1/page/summary/{author}`). Displays a short biography, photo thumbnail, and a link to the full Wikipedia article — no API key required.
 
 ---
 

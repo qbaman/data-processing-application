@@ -20,4 +20,6 @@ public class ComicDetailsViewModel
     public GoogleBooksLookupResult? GoogleBooks { get; set; }
     public string? OpenLibraryCoverUrl { get; set; }
     public OpenLibraryLookupResult? OpenLibrary { get; set; }
+    public ComicVineLookupResult? ComicVine { get; set; }
+    public WikipediaLookupResult? Wikipedia { get; set; }
 }

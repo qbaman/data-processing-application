@@ -171,19 +171,6 @@
     </div>
 }
 
-@{
-    var pageUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
-    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(pageUrl)}";
-}
-
-<div class="card mt-3" style="max-width: 220px;">
-    <div class="card-body text-center">
-        <h5 class="card-title">QR Code</h5>
-        <img src="@qrUrl" alt="QR code linking to this page" class="img-fluid" />
-        <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">Scan to open this page</p>
-    </div>
-</div>
-
 @if (Model.OpenLibrary?.HasData == true)
 {
     <div class="card mt-3">
@@ -223,6 +210,31 @@
                 }
 
             </dl>
+        </div>
+    </div>
+}
+
+@if (Model.Wikipedia?.HasData == true)
+{
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">About the Author (Wikipedia)</h5>
+            <div class="d-flex gap-3">
+                @if (!string.IsNullOrWhiteSpace(Model.Wikipedia.ThumbnailUrl))
+                {
+                    <img src="@Model.Wikipedia.ThumbnailUrl"
+                         alt="Photo of @Model.Wikipedia.Title"
+                         class="rounded"
+                         style="width:80px; height:80px; object-fit:cover; flex-shrink:0;" />
+                }
+                <div>
+                    <p class="mb-1">@Model.Wikipedia.Extract</p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Wikipedia.PageUrl))
+                    {
+                        <a href="@Model.Wikipedia.PageUrl" target="_blank" rel="noopener noreferrer">Read more on Wikipedia</a>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 }

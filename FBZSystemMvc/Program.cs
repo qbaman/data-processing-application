@@ -78,6 +78,7 @@ builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();
 builder.Services.AddHostedService<DatasetUpdateHostedService>();
 
 builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
+builder.Services.AddHttpClient<IWikipediaService, WikipediaService>();
 
 var app = builder.Build();
 
