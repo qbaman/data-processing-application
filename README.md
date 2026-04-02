@@ -1,208 +1,185 @@
-# FBZ Encyclopedia (Fantasy B’zaar Encyclopedia System)
+# FBZ Encyclopedia
+### Fantasy B'zaar Encyclopedia System
 
-A C# project for loading, searching, filtering, sorting, grouping, and displaying comic data from the British Library **“Comics Unmasked”** dataset (Phase 1 focus: `names.csv`).
-
-This repo contains:
-- **WinForms app (Windows-only)** — the original FBZSystem desktop application.
-- **ASP.NET Core MVC app (cross-platform)** — the current web-based version in **`/FBZSystemMvc`**.
+> A full-stack ASP.NET Core MVC web application for exploring the British Library **Comics Unmasked** dataset — 70,000+ comic records with search, filtering, enrichment from multiple external APIs, and a full CI/CD pipeline to AWS Elastic Beanstalk.
 
 ---
 
-## 📘 Overview
-FBZ Encyclopedia provides a lightweight way to explore a large comic dataset (70,000+ rows in `names.csv`) and supports both public customers and staff users.
+## ✨ Features at a Glance
 
-The MVC application implements:
-- Fast dataset search and advanced filtering
-- Role-based access (Public vs Staff)
-- Persistent user features (saved lists)
-- Staff tools (flags + analytics)
-- Desktop + kiosk-friendly UI
-
----
-
-## 🧾 Dataset & Licensing
-Dataset: British Library “Comics Unmasked” (Researcher Format).  
-License: **CC0 1.0 Universal (Public Domain)** — no restrictions on use/reuse.  
-Note: The British Library **does not endorse** applications created using the dataset.
-
-Dataset sources:
-- https://www.bl.uk/collection-metadata/downloads
-- https://www.bl.uk/bibliographic/downloads/ComicsResearcherFormat_202204_csv.zip
+| Area | Highlights |
+|------|-----------|
+| 🔍 **Search** | Title, author, genre, year range, language, edition, resource type, content type |
+| 📚 **External APIs** | Google Books · Open Library · Comic Vine · QR Code |
+| 👤 **Accounts** | Register / Login / Logout via ASP.NET Core Identity |
+| 💾 **Saved Lists** | Persist search results across sessions in SQLite |
+| 🛡️ **Staff Tools** | Flag records, analytics dashboard, dataset updates |
+| 🖥️ **Kiosk Mode** | Touch-friendly UI for public terminals |
+| 🚀 **CI/CD** | GitHub Actions → AWS Elastic Beanstalk (auto-deploy on push to `main`) |
 
 ---
 
-## 🔎 Key Features
+## 🌐 External API Integrations
 
-### ASP.NET Core MVC (Current)
-Located in: **`/FBZSystemMvc`**
+Each comic detail page is enriched with live data from four external APIs:
 
-**Search & display**
-- Loads `names.csv` into memory for fast searching
-- Handles special characters and formats fields into readable output
-- Combines duplicate rows into a single comic record with variant values (e.g., years/ISBNs as lists)
-- Displays `"missing"` when ISBN is not present
+### 📖 Google Books
+Matches the comic by ISBN/title and pulls publisher, page count, description, and preview links.
 
-**Search, filtering, grouping**
-- Basic search: title contains, author contains
-- Advanced search parameters:
-  - Genre, name type
-  - Publication year range
-  - Language, edition
-  - Resource type, content type, physical description, topics
-- Sorting: title **A–Z** and **Z–A**
+### 🏛️ Open Library
+Fetches cover art, first publish year, subjects, and related ISBNs from the Internet Archive's Open Library.
+
+### 🦸 Comic Vine
+Looks up comic-specific metadata including publisher, deck summary, and series information.
+
+### 📱 QR Code *(api.qrserver.com)*
+Generates a scannable QR code for every detail page on-the-fly — no API key required. Scan it with a phone to instantly open the same comic.
+
+---
+
+## 🔎 Search & Display
+
+- Loads `names.csv` (~70K rows) into memory for fast in-process search
+- Combines duplicate rows into single records with variant values (years, ISBNs, authors as lists)
+- Sorting: **A–Z** / **Z–A** via pluggable strategy classes
 - Grouping: **None / Author / Year**
-- Paging + configurable page size (prevents huge tables)
-
-**Session Search List**
-- Add / Remove / Clear
-- Export Search List to CSV
-- Finish/Exit clears the session list
-
-**Accounts & persistence**
-- ASP.NET Core Identity (register/login/logout)
-- Persistent **Saved Lists** (saved search results) stored in SQLite and available across sessions/devices
-
-**Staff-only features**
-- Flag records for review (with reason)
-- View flagged records list
-- Real-time analytics dashboard:
-  - Top 10 most common search queries
-  - Top 10 most frequently returned results
-  - Comics included in more than 100 searches (populates over time)
-
-**Kiosk mode**
-- Kiosk UI mode via `?kiosk=1` with touch-friendly sizing
-- Kiosk state preserved during Add/Remove/Clear actions
-- Toggle back to normal desktop mode
-
-**Dataset updates (Phase 1)**
-- Staff dataset update page (safe update attempt + status)
-- Background checker framework in place
-- Update failures handled gracefully (app remains usable)
+- Paging with configurable page size
 
 ---
 
-### WinForms (Original)
-- CSV data loading using a repository class (`ComicRepositoryCsv`)
-- Search functionality with multiple filters
-- Sorting and grouping via strategy classes
-- Search history / list management
-- Consistent display output using formatter class
-- Separated UI, logic, and data layers (SOLID-aligned)
+## 👤 Accounts & Persistence
+
+- **ASP.NET Core Identity** — register, login, logout with hashed passwords
+- **Saved Lists** — save search results to SQLite, accessible across devices and sessions
+- **Session List** — temporary add/remove/clear/export-to-CSV within a session
+- **Kiosk mode** — `?kiosk=1` activates a touch-optimised layout; Finish/Exit clears the session
 
 ---
 
-## ▶️ Run Locally (ASP.NET Core MVC)
+## 🛡️ Staff Features
 
-### Prerequisites
-- .NET SDK installed (`dotnet --version`)
+Staff accounts (role-gated) have access to:
 
-### Steps
+| Route | Purpose |
+|-------|---------|
+| `/staff/flags` | Flag records for review with a reason; unflag when resolved |
+| `/staff/analytics` | Top 10 queries, top 10 results, comics appearing in 100+ searches |
+| `/staff/dataset` | Trigger a live dataset update from the British Library source URL |
+
+---
+
+## 🚀 CI/CD Pipeline
+
+Every push to `main` triggers a fully automated pipeline:
+
+```
+Push to main
+    → GitHub Actions: Restore → Build → Test
+    → dotnet publish
+    → Copy names.csv + Procfile into artefact
+    → Verify artefact (fast-fail if files missing)
+    → Zip → Upload to S3
+    → Create Elastic Beanstalk application version
+    → Deploy to EB environment
+```
+
+Infrastructure is defined in `infra/terraform/` (AWS provider, us-east-1, t3.micro, .NET 9 on Amazon Linux 2023).
+
+---
+
+## ▶️ Run Locally
+
+**Prerequisites:** .NET 9 SDK
+
 ```bash
 cd FBZSystemMvc
 dotnet restore
 dotnet run
-````
+```
 
-Open the URL shown in the terminal (usually `http://localhost:####`) and use:
+Open `http://localhost:5236` in your browser.
 
-* `/` (Home / introduction)
-* `/Dataset` (Search)
-* `/Dataset?kiosk=1` (Kiosk mode)
-
-Staff tools (requires Staff role):
-
-* `/staff/flags`
-* `/staff/analytics`
-* `/staff/dataset`
+| URL | Description |
+|-----|-------------|
+| `/` | Home |
+| `/Dataset` | Search |
+| `/Dataset?kiosk=1` | Kiosk mode |
+| `/staff/flags` | Staff — flagged records |
+| `/staff/analytics` | Staff — analytics dashboard |
+| `/staff/dataset` | Staff — dataset update |
 
 ---
 
 ## 🧪 Automated Tests
 
-A test project is included to provide automated evidence of correctness.
-
-Run:
-
 ```bash
 dotnet test FBZSystemMvc.Tests/FBZSystemMvc.Tests.csproj
 ```
 
-Includes:
-
-* Smoke tests for key routes (Home/Dataset/Kiosk)
-* Unit tests for AnalyticsService using an in-memory SQLite database
-
----
-
-## 🪟 Run (WinForms - Windows Only)
-
-The original WinForms app targets Windows. To run:
-
-* Open the solution on Windows (Visual Studio)
-* Build and run the WinForms project
+- **Smoke tests** — verifies key routes return 200 (Home, Dataset, Kiosk)
+- **Unit tests** — `AnalyticsService` logic tested against an in-memory SQLite database
 
 ---
 
 ## 📁 Project Structure
 
-* `Data/` — CSV dataset files (Phase 1 uses `names.csv`)
-* `Domain/` — domain models / core types
-* `Repositories/` — data access (CSV repository)
-* `Services/` — search, analytics, dataset updates, saved lists, orchestration logic
-* `Strategies/` — sorting and grouping strategies
-* `FBZSystemMvc/` — ASP.NET Core MVC web app (cross-platform)
-* `FBZSystemMvc.Tests/` — automated tests (xUnit)
+```
+FBZSystemMvc/
+├── Controllers/          # MVC controllers (Staff routes under Controllers/Staff/)
+├── Data/                 # names.csv dataset
+├── Domain/               # Core domain types (Comic, Search)
+├── Migrations/           # EF Core migrations
+├── Models/               # ViewModels
+├── Persistence/          # EF Core DbContext + entities
+├── Repositories/         # CSV data access + hot-reload support
+├── Services/
+│   ├── ExternalApis/     # GoogleBooks, OpenLibrary, ComicVine, QR Code
+│   ├── Persistence/      # Analytics, SavedComics services
+│   └── DatasetUpdates/   # Background dataset update service
+├── Strategies/           # Sort + group strategies (Strategy pattern)
+├── Views/                # Razor views
+└── wwwroot/              # Static assets
+infra/terraform/          # AWS infrastructure definitions
+.github/workflows/        # CI/CD pipeline
+```
 
 ---
 
-## 🧩 SOLID Principles Guide
+## 🧩 SOLID Principles
 
-This project contains examples of all five SOLID principles:
-
-**Single Responsibility**
-
-* `ComicRepositoryCsv` — loads/parses CSV
-* `SearchService` — search/filter/sort/group logic
-* `AnalyticsService` — analytics aggregation logic
-* Dataset update service — update orchestration + safe swap
-* MVC controllers/views — presentation only
-
-**Open/Closed**
-
-* Sort strategies (ascending/descending)
-* Group strategies (author/year)
-* Extend by adding new strategies without changing core search logic
-
-**Liskov Substitution**
-
-* Strategy interfaces can be swapped safely
-* Repository abstraction supports future storage changes
-
-**Interface Segregation**
-
-* Small focused interfaces (repository/services)
-
-**Dependency Inversion**
-
-* Controllers depend on abstractions
-* Services depend on interfaces
-* DI wiring in one place
+| Principle | Example |
+|-----------|---------|
+| **Single Responsibility** | `ComicRepositoryCsv` loads CSV · `SearchService` handles search logic · `AnalyticsService` handles analytics |
+| **Open/Closed** | New sort/group strategies can be added without changing `SearchService` |
+| **Liskov Substitution** | Any `ISortStrategy` or `IGroupingStrategy` can be swapped in transparently |
+| **Interface Segregation** | Small focused interfaces — `IComicRepository`, `ISearchService`, `IAnalyticsService` |
+| **Dependency Inversion** | Controllers and services depend on abstractions; all wiring in `Program.cs` |
 
 ---
 
-## 🛠️ Technologies Used
+## 🛠️ Tech Stack
 
-* C# (.NET)
-* ASP.NET Core MVC + Identity
-* EF Core + SQLite
-* CSV dataset processing + LINQ
-* Strategy pattern (sorting/grouping)
-* xUnit automated tests
+- **C# / .NET 9** — ASP.NET Core MVC
+- **EF Core + SQLite** — persistence and migrations
+- **ASP.NET Core Identity** — authentication and role management
+- **Deedle** — CSV dataset loading
+- **xUnit** — automated testing
+- **GitHub Actions** — CI/CD
+- **AWS Elastic Beanstalk + S3** — cloud hosting
+- **Terraform** — infrastructure as code
+
+---
+
+## 📋 Dataset
+
+**British Library — Comics Unmasked** (Researcher Format)
+License: **CC0 1.0 Universal (Public Domain)**
+Source: [bl.uk/collection-metadata/downloads](https://www.bl.uk/collection-metadata/downloads)
+
+> The British Library does not endorse this application.
 
 ---
 
 ## 👤 Author
 
-**Aman — HND Cloud & AI Computing**
-
+**Aman** — HND Cloud & AI Computing
