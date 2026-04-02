@@ -77,12 +77,15 @@ builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<IDatasetUpdateService, DatasetUpdateService>();
 builder.Services.AddHostedService<DatasetUpdateHostedService>();
 
+builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
 
 var app = builder.Build();
 
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Urls.Add($"http://0.0.0.0:{port}");
+// Only override the URL when EB sets PORT; locally launchSettings.json controls the port.
+var ebPort = Environment.GetEnvironmentVariable("PORT");
+if (ebPort is not null)
+    app.Urls.Add($"http://0.0.0.0:{ebPort}");
 
 // ✅ APPLY MIGRATIONS + SEED STAFF ROLE
 using (var scope = app.Services.CreateScope())
@@ -100,13 +103,14 @@ using (var scope = app.Services.CreateScope())
 
 
 // Middleware order
+// Note: UseHttpsRedirection is intentionally omitted — EB terminates TLS at
+// the load balancer and forwards plain HTTP to the app. Redirecting to HTTPS
+// here would cause an infinite redirect loop and a 502.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();

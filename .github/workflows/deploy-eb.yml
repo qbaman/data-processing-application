@@ -43,6 +43,20 @@ jobs:
       - name: Publish
         run: dotnet publish FBZSystemMvc/FBZSystemMvc.csproj -c Release -o publish
 
+      - name: Copy dataset into publish output
+        run: |
+          mkdir -p publish/Data
+          cp FBZSystemMvc/Data/names.csv publish/Data/names.csv
+
+      - name: Copy Procfile into publish output
+        run: cp FBZSystemMvc/Procfile publish/Procfile
+
+      - name: Verify artefact contents
+        run: |
+          test -f publish/Data/names.csv   || (echo "ERROR: names.csv missing"  && exit 1)
+          test -f publish/Procfile         || (echo "ERROR: Procfile missing"    && exit 1)
+          test -f publish/FBZSystemMvc.dll || (echo "ERROR: app DLL missing"     && exit 1)
+
       - name: Zip artifact
         run: cd publish && zip -r ../deploy.zip .
 
@@ -69,10 +83,3 @@ jobs:
           aws elasticbeanstalk update-environment \
             --environment-name fbzsystemmvc-env \
             --version-label ${{ github.sha }}
-
-      - name: Verify dataset in publish output
-        run: |
-            ls -la publish || true
-            ls -la publish/Data || true
-            test -f publish/Data/names.csv
-            
