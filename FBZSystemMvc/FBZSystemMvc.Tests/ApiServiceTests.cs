@@ -29,6 +29,18 @@ file sealed class FakeHttpHandler(HttpStatusCode status, string body) : HttpMess
     }
 }
 
+file sealed class TrackingHttpHandler : HttpMessageHandler
+{
+    public bool WasCalled { get; private set; }
+
+    protected override Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        WasCalled = true;
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+    }
+}
+
 file static class FakeHttp
 {
     public static HttpClient Client(HttpStatusCode status, string body)
@@ -316,5 +328,79 @@ public class WikipediaServiceTests
         Assert.NotNull(result);
         Assert.Null(result.ThumbnailUrl);
         Assert.True(result.HasData);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// EmailService tests
+// ---------------------------------------------------------------------------
+
+public class EmailServiceTests
+{
+    private static IConfiguration ConfigWithKey()
+        => new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["SendGrid:ApiKey"] = "SG.test-key" })
+            .Build();
+
+    [Fact]
+    public async Task SendComicEmailAsync_ValidEmailAndData_ReturnsTrue()
+    {
+        // SendGrid returns 202 Accepted on success.
+        var svc = new EmailService(
+            FakeHttp.Client(HttpStatusCode.Accepted, "{}"),
+            ConfigWithKey(),
+            NullLogger<EmailService>.Instance);
+
+        var result = await svc.SendComicEmailAsync(
+            "reader@example.com",
+            "Watchmen",
+            "Alan Moore",
+            "A landmark graphic novel.",
+            "https://covers.openlibrary.org/b/isbn/9781779501127-L.jpg",
+            "https://books.google.com/books?id=watchmen");
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task SendComicEmailAsync_ApiDown_ReturnsFalseWithoutThrowing()
+    {
+        // SendGrid returns 503 — service should swallow the failure and return false.
+        var svc = new EmailService(
+            FakeHttp.Down(),
+            ConfigWithKey(),
+            NullLogger<EmailService>.Instance);
+
+        var result = await svc.SendComicEmailAsync(
+            "reader@example.com",
+            "Watchmen",
+            "Alan Moore",
+            string.Empty,
+            string.Empty,
+            string.Empty);
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task SendComicEmailAsync_InvalidEmail_ReturnsFalseWithoutCallingApi()
+    {
+        // The service must reject bad addresses before making any HTTP call.
+        var handler = new TrackingHttpHandler();
+        var svc = new EmailService(
+            new HttpClient(handler),
+            ConfigWithKey(),
+            NullLogger<EmailService>.Instance);
+
+        var result = await svc.SendComicEmailAsync(
+            "not-an-email",
+            "Watchmen",
+            "Alan Moore",
+            string.Empty,
+            string.Empty,
+            string.Empty);
+
+        Assert.False(result);
+        Assert.False(handler.WasCalled);
     }
 }

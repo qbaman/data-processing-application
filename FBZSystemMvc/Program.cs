@@ -89,6 +89,7 @@ builder.Services.AddHttpClient<IGoogleBooksService, GoogleBooksService>();
 builder.Services.AddHttpClient<IOpenLibraryService, OpenLibraryService>();
 builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
 builder.Services.AddHttpClient<IWikipediaService, WikipediaService>();
+builder.Services.AddHttpClient<IEmailService, EmailService>();
 
 // dataset update
 builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));

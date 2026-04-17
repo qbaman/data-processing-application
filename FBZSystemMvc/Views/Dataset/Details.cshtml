@@ -258,3 +258,63 @@
         </div>
     </div>
 }
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">Email this comic to yourself</h5>
+        <div class="d-flex gap-2 align-items-start flex-wrap">
+            <input type="email"
+                   id="email-comic-input"
+                   class="form-control"
+                   style="max-width:300px;"
+                   placeholder="your@email.com"
+                   autocomplete="email" />
+            <button type="button"
+                    id="email-comic-btn"
+                    class="btn btn-outline-primary"
+                    data-comic-id="@Html.Encode(Model.Comic.Id)">
+                Send
+            </button>
+        </div>
+        <div id="email-comic-status" class="mt-2" style="display:none;" role="status" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var btn = document.getElementById('email-comic-btn');
+    var input = document.getElementById('email-comic-input');
+    var status = document.getElementById('email-comic-status');
+
+    btn.addEventListener('click', function () {
+        var email = input.value.trim();
+        if (!email) {
+            showStatus('Please enter your email address.', false);
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Sending\u2026';
+        status.style.display = 'none';
+
+        var form = new FormData();
+        form.append('comicId', btn.dataset.comicId);
+        form.append('toEmail', email);
+
+        fetch('/Dataset/EmailComic', { method: 'POST', body: form })
+            .then(function (res) { return res.json(); })
+            .then(function (data) { showStatus(data.message, data.success); })
+            .catch(function () { showStatus('An error occurred. Please try again.', false); })
+            .finally(function () {
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            });
+    });
+
+    function showStatus(message, success) {
+        status.textContent = message;
+        status.className = 'mt-2 ' + (success ? 'text-success' : 'text-danger');
+        status.style.display = 'block';
+    }
+}());
+</script>
