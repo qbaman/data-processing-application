@@ -1,9 +1,9 @@
 {
   "CurrentZipSha256": "bc645ebf76db7cf8cbd8dc49105484ae0368af1e23ba183066f53c55775f5201",
-  "LastCheckedUtc": "2026-03-16T22:49:52.3109489Z",
-  "LastUpdatedUtc": "2026-03-05T14:29:23.328148Z",
-  "LastOutcome": "Failed",
-  "LastError": "No connection could be made because the target machine actively refused it. (localhost:5236)",
+  "LastCheckedUtc": "2026-04-20T20:20:42.8630046Z",
+  "LastUpdatedUtc": "2026-04-16T20:23:18.2550094Z",
+  "LastOutcome": "No change",
+  "LastError": null,
   "RepositoryLoadedUtc": "0001-01-01T00:00:00",
   "LocalCsvLastWriteUtc": null
 }
