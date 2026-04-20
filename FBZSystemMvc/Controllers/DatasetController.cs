@@ -28,6 +28,7 @@ public class DatasetController : Controller
     private readonly IWikipediaService _wikipedia;
     private readonly IMemoryCache _cache;
     private readonly RecentlyViewedStore _recentlyViewed;
+    private readonly IAISummaryService _aiSummary;
 
     public DatasetController(
         ISearchService search,
@@ -40,7 +41,8 @@ public class DatasetController : Controller
         IOpenLibraryService openLibrary,
         IWikipediaService wikipedia,
         IMemoryCache cache,
-        RecentlyViewedStore recentlyViewed)
+        RecentlyViewedStore recentlyViewed,
+        IAISummaryService aiSummary)
     {
         _search = search;
         _repo = repo;
@@ -53,6 +55,7 @@ public class DatasetController : Controller
         _wikipedia = wikipedia;
         _cache = cache;
         _recentlyViewed = recentlyViewed;
+        _aiSummary = aiSummary;
     }
 
     [HttpGet]
@@ -255,6 +258,38 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
         .ToList();
 
         return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AISummary(string id, CancellationToken cancellationToken)
+    {
+        var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == id);
+        if (comic is null)
+            return Json(new { summary = "AI summary is temporarily unavailable." });
+
+        var cacheKey = $"ai:{id}";
+        if (_cache.TryGetValue(cacheKey, out string? cached))
+            return Json(new { summary = cached });
+
+        _cache.TryGetValue($"gb:{id}", out GoogleBooksLookupResult? gb);
+
+        string? wikiExtract = null;
+        var firstAuthor = comic.Authors?.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a));
+        if (firstAuthor is not null)
+        {
+            var parts = firstAuthor.Split(',', 2);
+            var wikiKey = parts.Length == 2
+                ? $"{parts[1].Trim()} {parts[0].Trim()}"
+                : firstAuthor.Trim();
+            if (_cache.TryGetValue($"wiki:{wikiKey}", out WikipediaLookupResult? wiki))
+                wikiExtract = wiki?.Extract;
+        }
+
+        var summary = await _aiSummary.GenerateSummaryAsync(
+            comic, gb?.Description, wikiExtract, cancellationToken);
+
+        _cache.Set(cacheKey, summary, TimeSpan.FromHours(24));
+        return Json(new { summary });
     }
 
     public IActionResult Exit()
