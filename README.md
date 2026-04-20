@@ -1,5 +1,4 @@
 # FBZ Encyclopedia
-**Fantasy B'zaar Encyclopedia System**
 
 A full-stack ASP.NET Core MVC web application for exploring the British Library Comics Unmasked dataset — 70,000+ comic records with search, filtering, external API enrichment, and a CI/CD pipeline to AWS Elastic Beanstalk.
 
@@ -26,6 +25,8 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 ## 🌐 External API Integrations
 
 Each comic detail page is enriched with live data from the following APIs:
+
+**OpenAI** - AI simplified summaries and explanations of comic data.
 
 **Google Books** — matches by ISBN or title, returns publisher, page count, description, and preview links.
 
