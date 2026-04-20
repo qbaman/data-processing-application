@@ -10,7 +10,11 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 | Area | Highlights |
 |------|-----------|
 | Search | Title, author, genre, year range, language, edition, resource type, content type |
+| Comic Detail | Enhanced layout with cover image, summary, structured metadata, external links |
+| Related Comics | Auto-suggests 4–6 similar comics by author, genre/topic, and year proximity |
+| Recently Viewed | Session-tracked strip of the last 5 comics visited |
 | External APIs | Google Books · Open Library · Comic Vine · Wikipedia · QR Code |
+| Newsletter | Footer subscription prototype (UI demo) |
 | Accounts | Register / login / logout via ASP.NET Core Identity |
 | Saved Lists | Persist search results across sessions in SQLite |
 | Staff Tools | Flag records, analytics dashboard, dataset updates |
@@ -37,12 +41,39 @@ Each comic detail page is enriched with live data from the following APIs:
 
 ## 🔒 Security
 
+**HTTP Security Headers** — applied to every response via middleware:
+
+| Header | Value |
+|--------|-------|
+| `X-Content-Type-Options` | `nosniff` — prevents MIME-type sniffing |
+| `X-Frame-Options` | `SAMEORIGIN` — blocks clickjacking |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` — limits referrer leakage |
+| `Permissions-Policy` | camera, microphone, and geolocation disabled |
+| `Content-Security-Policy` | Restricts resource origins to `'self'` and known CDN/image hosts |
+
+**Application-level controls:**
+
 - All string search inputs capped at 200 characters; `PageSize` clamped to 100
 - External API calls skipped if title or author name exceeds 300 characters
 - Fixed-window rate limiting on `/Dataset` — 30 requests per minute per IP, returns 429 when exceeded
-- API keys loaded from environment variables / config, not hardcoded
+- API keys loaded from environment variables / user secrets, never hardcoded
 - `ILogger` on all API services — failures logged as warnings, never crash the app
 - API results cached in memory for 1 hour per comic to reduce external calls
+- Anti-forgery tokens on all state-changing forms (ASP.NET Core default)
+- HSTS enabled in production
+
+---
+
+## Comic Detail Page
+
+The detail page presents each comic in a structured, readable layout:
+
+- **Hero section** — cover image (from Open Library), title, author, year, genre, and quick-access buttons (Google Books, Wikipedia, QR code toggle)
+- **Summary** — description from Google Books or Wikipedia extract
+- **Details card** — clean label/value metadata including publisher, page count, subjects, and library classification fields
+- **Author bio** — Wikipedia photo and biography when available
+- **Related Comics** — up to 6 automatically suggested comics scored by: same author (+3), shared genre or topic (+2 each), year within ±5 years (+1). Displayed as clickable cards.
+- **Recently Viewed** — the last 5 unique comics visited in the current session, shown as a quick-navigation strip at the bottom of the page
 
 ---
 
@@ -61,6 +92,7 @@ Each comic detail page is enriched with live data from the following APIs:
 - ASP.NET Core Identity — register, login, logout with hashed passwords
 - Saved Lists — save search results to SQLite, accessible across devices and sessions
 - Session List — temporary add / remove / clear / export to CSV within a session
+- Recently Viewed — session-based, auto-updated on each comic detail page visit
 - Kiosk mode — `?kiosk=1` activates a touch-optimised layout; Finish/Exit clears the session
 
 ---
@@ -125,7 +157,7 @@ Open `http://localhost:5236` in your browser.
 dotnet test FBZSystemMvc.Tests/FBZSystemMvc.Tests.csproj
 ```
 
-19 tests across three suites:
+22 tests across three suites:
 
 - **API service tests** — GoogleBooksService, OpenLibraryService, WikipediaService tested with a fake HTTP handler (no real network calls). Covers valid responses, empty responses, API down, edge cases.
 - **Analytics tests** — AnalyticsService logic against an in-memory SQLite database
@@ -147,7 +179,9 @@ FBZSystemMvc/
 ├── Services/
 │   ├── ExternalApis/     Google Books, Open Library, Comic Vine, Wikipedia
 │   ├── Persistence/      analytics and saved comics services
-│   └── DatasetUpdates/   background dataset update service
+│   ├── DatasetUpdates/   background dataset update service
+│   ├── RecentlyViewedStore.cs   session-based recently viewed tracking
+│   └── SearchListStore.cs       session-based search list
 ├── Strategies/           sort and group strategies
 ├── Views/                Razor views
 └── wwwroot/              static assets

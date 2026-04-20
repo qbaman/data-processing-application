@@ -65,11 +65,63 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - FBZSystemMvc - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-muted mt-4">
+        <div class="container py-4">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6">
+                    <p class="mb-1 fw-semibold">Stay Updated</p>
+                    <p class="mb-2 small">Get notified when new comics are added or features change.</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <input type="email"
+                               id="newsletter-input"
+                               class="form-control form-control-sm"
+                               style="max-width:220px;"
+                               placeholder="your@email.com"
+                               autocomplete="email"
+                               aria-label="Newsletter email address" />
+                        <button type="button"
+                                id="newsletter-btn"
+                                class="btn btn-sm btn-primary">
+                            Subscribe
+                        </button>
+                    </div>
+                    <div id="newsletter-status" class="mt-2 small" style="display:none;" role="status" aria-live="polite"></div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 small">&copy; 2026 - FBZSystemMvc</p>
+                    <p class="mb-0 small">
+                        <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <script>
+    (function () {
+        var btn    = document.getElementById('newsletter-btn');
+        var input  = document.getElementById('newsletter-input');
+        var status = document.getElementById('newsletter-status');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            var email = (input.value || '').trim();
+            if (!email) {
+                status.textContent = 'Please enter your email address.';
+                status.className = 'mt-2 small text-danger';
+                status.style.display = 'block';
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Subscribing\u2026';
+            setTimeout(function () {
+                status.textContent = 'Subscribed! You\u2019ll be notified of updates.';
+                status.className = 'mt-2 small text-success';
+                status.style.display = 'block';
+                btn.textContent = 'Subscribed';
+            }, 600);
+        });
+    }());
+    </script>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -78,6 +78,58 @@ namespace FBZ_System.Services
             return new Dictionary<string, List<Comic>>();
         }
 
+        public List<Comic> FindRelated(Comic source, int count = 5)
+        {
+            if (source is null) return new List<Comic>();
+
+            var sourceAuthors = new HashSet<string>(
+                (source.Authors ?? Enumerable.Empty<string>())
+                    .Where(a => !string.IsNullOrWhiteSpace(a))
+                    .Select(a => a!.Trim().ToLowerInvariant()),
+                StringComparer.OrdinalIgnoreCase);
+
+            var sourceGenres = new HashSet<string>(
+                (source.Genres ?? Enumerable.Empty<string>())
+                    .Where(g => !string.IsNullOrWhiteSpace(g))
+                    .Select(g => g!.Trim().ToLowerInvariant()),
+                StringComparer.OrdinalIgnoreCase);
+
+            var sourceTopics = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (source.ExtraAttributes?.TryGetValue("Topics", out var srcTopics) == true && srcTopics is not null)
+                foreach (var t in srcTopics.Where(t => !string.IsNullOrWhiteSpace(t)))
+                    sourceTopics.Add(t!.Trim().ToLowerInvariant());
+
+            var sourceYear = source.Years?.Count > 0 ? source.Years.Min() : (int?)null;
+
+            return _repository.GetAllComics()
+                .Where(c => c.Id != source.Id)
+                .Select(c =>
+                {
+                    int score = 0;
+
+                    if (c.Authors is not null &&
+                        c.Authors.Any(a => !string.IsNullOrWhiteSpace(a) && sourceAuthors.Contains(a.Trim())))
+                        score += 3;
+
+                    if (c.Genres is not null)
+                        score += c.Genres.Count(g => !string.IsNullOrWhiteSpace(g) && sourceGenres.Contains(g.Trim())) * 2;
+
+                    if (c.ExtraAttributes?.TryGetValue("Topics", out var cTopics) == true && cTopics is not null)
+                        score += cTopics.Count(t => !string.IsNullOrWhiteSpace(t) && sourceTopics.Contains(t.Trim())) * 2;
+
+                    if (sourceYear.HasValue && c.Years?.Count > 0 &&
+                        Math.Abs(c.Years.Min() - sourceYear.Value) <= 5)
+                        score += 1;
+
+                    return (Comic: c, Score: score);
+                })
+                .Where(x => x.Score > 0)
+                .OrderByDescending(x => x.Score)
+                .Take(count)
+                .Select(x => x.Comic)
+                .ToList();
+        }
+
         private List<Comic> FilterBase(SearchQuery query)
         {
             var comics = _repository

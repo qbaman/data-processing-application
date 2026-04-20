@@ -1,257 +1,218 @@
 @model FBZSystemMvc.Models.ComicDetailsViewModel
 
 @{
-    ViewData["Title"] = "Comic Details";
+    ViewData["Title"] = Model.Comic.MainTitle ?? "Comic Details";
+
+    var coverUrl = Model.OpenLibraryCoverUrl
+        ?? Model.OpenLibrary?.CoverUrl;
+
+    var description = Model.GoogleBooks?.Description
+        ?? (!string.IsNullOrWhiteSpace(Model.Wikipedia?.Extract) ? Model.Wikipedia!.Extract : null);
+
+    var googleBooksUrl = Model.GoogleBooks?.InfoLink ?? Model.GoogleBooks?.PreviewLink;
+    var wikipediaUrl   = Model.Wikipedia?.PageUrl;
+
+    var qrTarget = wikipediaUrl ?? googleBooksUrl;
+    var qrUrl    = string.IsNullOrWhiteSpace(qrTarget)
+        ? null
+        : $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(qrTarget)}";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="mb-0">@Model.Comic.MainTitle</h1>
-
-    <a class="btn btn-outline-secondary" href="javascript:history.back()">Back</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a asp-controller="Dataset" asp-action="Index">Search</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Comic.MainTitle</li>
+        </ol>
+    </nav>
+    <a class="btn btn-outline-secondary btn-sm" href="javascript:history.back()">&#8592; Back</a>
 </div>
 
-<div class="card mb-3">
+
+<div class="card mb-4 shadow-sm">
     <div class="card-body">
+        <div class="row g-4">
+            <div class="col-auto">
+                @if (!string.IsNullOrWhiteSpace(coverUrl))
+                {
+                    <img src="@coverUrl"
+                         alt="Cover for @Model.Comic.MainTitle"
+                         class="rounded shadow-sm"
+                         style="width:140px; object-fit:cover;"
+                         onerror="this.style.display='none'; document.getElementById('cover-placeholder').style.display='flex';" />
+                    <div id="cover-placeholder"
+                         class="rounded bg-secondary d-none align-items-center justify-content-center text-white"
+                         style="width:140px; height:200px; font-size:.75rem;">No cover</div>
+                }
+                else
+                {
+                    <div class="rounded bg-secondary d-flex align-items-center justify-content-center text-white"
+                         style="width:140px; height:200px; font-size:.75rem;">No cover</div>
+                }
+            </div>
+
+            <div class="col">
+                <h1 class="h2 mb-2">@Model.Comic.MainTitle</h1>
+
+                @if (Model.AuthorsDisplay.Count > 0)
+                {
+                    <p class="mb-1">
+                        <span class="fw-semibold">Author@(Model.AuthorsDisplay.Count > 1 ? "s" : ""):</span>
+                        @string.Join(", ", Model.AuthorsDisplay)
+                    </p>
+                }
+
+                @if (Model.YearsDisplay.Count > 0)
+                {
+                    <p class="mb-1">
+                        <span class="fw-semibold">Year@(Model.YearsDisplay.Count > 1 ? "s" : ""):</span>
+                        @string.Join(", ", Model.YearsDisplay)
+                    </p>
+                }
+
+                @if (Model.GenresDisplay.Count > 0)
+                {
+                    <p class="mb-2">
+                        <span class="fw-semibold">Genre@(Model.GenresDisplay.Count > 1 ? "s" : ""):</span>
+                        @string.Join(", ", Model.GenresDisplay)
+                    </p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(googleBooksUrl) || !string.IsNullOrWhiteSpace(wikipediaUrl) || !string.IsNullOrWhiteSpace(qrUrl))
+                {
+                    <div class="d-flex flex-wrap gap-2 mt-3">
+                        @if (!string.IsNullOrWhiteSpace(googleBooksUrl))
+                        {
+                            <a href="@googleBooksUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                View on Google Books
+                            </a>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(wikipediaUrl))
+                        {
+                            <a href="@wikipediaUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary">
+                                Read on Wikipedia
+                            </a>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(qrUrl))
+                        {
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#qr-panel"
+                                    aria-expanded="false">
+                                QR Code
+                            </button>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(qrUrl))
+                    {
+                        <div class="collapse mt-2" id="qr-panel">
+                            <img src="@qrUrl"
+                                 alt="QR code for @Model.Comic.MainTitle"
+                                 class="rounded border"
+                                 style="width:120px;" />
+                            <p class="text-muted mt-1 mb-0" style="font-size:.7rem;">
+                                Links to @(!string.IsNullOrWhiteSpace(wikipediaUrl) ? "Wikipedia" : "Google Books")
+                            </p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (!string.IsNullOrWhiteSpace(description))
+{
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Summary</h5>
+            <p class="mb-0 lh-lg">@description</p>
+        </div>
+    </div>
+}
+
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3">Details</h5>
         <dl class="row mb-0">
             <dt class="col-sm-3">Title</dt>
             <dd class="col-sm-9">@Model.Comic.MainTitle</dd>
 
-            <dt class="col-sm-3">Authors</dt>
-            <dd class="col-sm-9">
-                @(Model.AuthorsDisplay.Count == 0 ? "—" : string.Join(", ", Model.AuthorsDisplay))
-            </dd>
+            <dt class="col-sm-3">Author@(Model.AuthorsDisplay.Count > 1 ? "s" : "")</dt>
+            <dd class="col-sm-9">@(Model.AuthorsDisplay.Count == 0 ? "—" : string.Join(", ", Model.AuthorsDisplay))</dd>
 
-            <dt class="col-sm-3">Publication years</dt>
-            <dd class="col-sm-9">
-                @(Model.YearsDisplay.Count == 0 ? "—" : string.Join(", ", Model.YearsDisplay))
-            </dd>
+            <dt class="col-sm-3">Year@(Model.YearsDisplay.Count > 1 ? "s" : "")</dt>
+            <dd class="col-sm-9">@(Model.YearsDisplay.Count == 0 ? "—" : string.Join(", ", Model.YearsDisplay))</dd>
 
-            <dt class="col-sm-3">Genres</dt>
-            <dd class="col-sm-9">
-                @(Model.GenresDisplay.Count == 0 ? "—" : string.Join(", ", Model.GenresDisplay))
-            </dd>
+            <dt class="col-sm-3">Genre@(Model.GenresDisplay.Count > 1 ? "s" : "")</dt>
+            <dd class="col-sm-9">@(Model.GenresDisplay.Count == 0 ? "—" : string.Join(", ", Model.GenresDisplay))</dd>
 
-            <dt class="col-sm-3">ISBNs</dt>
-            <dd class="col-sm-9">
-                @(Model.IsbnsDisplay.Count == 0 ? "missing" : string.Join(", ", Model.IsbnsDisplay))
-            </dd>
+            <dt class="col-sm-3">ISBN@(Model.IsbnsDisplay.Count > 1 ? "s" : "")</dt>
+            <dd class="col-sm-9">@(Model.IsbnsDisplay.Count == 0 ? "—" : string.Join(", ", Model.IsbnsDisplay))</dd>
+
+            @if (Model.GoogleBooks?.Publisher is not null)
+            {
+                <dt class="col-sm-3">Publisher</dt>
+                <dd class="col-sm-9">@Model.GoogleBooks.Publisher</dd>
+            }
+
+            @if (Model.GoogleBooks?.PageCount.HasValue == true)
+            {
+                <dt class="col-sm-3">Page count</dt>
+                <dd class="col-sm-9">@Model.GoogleBooks.PageCount</dd>
+            }
+
+            @if (Model.OpenLibrary?.Subjects?.Count > 0)
+            {
+                <dt class="col-sm-3">Subjects</dt>
+                <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.Subjects.Take(8))</dd>
+            }
+
+            @foreach (var line in Model.InfoLines ?? new())
+            {
+                var sep = line.IndexOf(':');
+                if (sep > 0)
+                {
+                    <dt class="col-sm-3">@line[..sep]</dt>
+                    <dd class="col-sm-9">@line[(sep + 1)..].Trim()</dd>
+                }
+                else
+                {
+                    <dt class="col-sm-3 col-sm-9">@line</dt>
+                    <dd class="col-sm-9"></dd>
+                }
+            }
         </dl>
     </div>
 </div>
 
-@if (User != null && User.IsInRole("Staff"))
-{
-    if (!Model.IsFlagged)
-    {
-        <form asp-controller="Flags" asp-action="Flag" method="post" class="m-0 d-flex gap-2 align-items-center">
-            <input type="hidden" name="comicId" value="@Model.Comic.Id" />
-            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-            <input type="text" name="reason" class="form-control form-control-sm" style="width: 220px;" placeholder="Reason (optional)" />
-            <button type="submit" class="btn btn-warning">Flag</button>
-        </form>
-    }
-    else
-    {
-        <form asp-controller="Flags" asp-action="Unflag" method="post" class="m-0">
-            <input type="hidden" name="comicId" value="@Model.Comic.Id" />
-            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-            <button type="submit" class="btn btn-outline-warning">Unflag</button>
-        </form>
-    }
-}
-
-@if (Model.InfoLines is not null && Model.InfoLines.Count > 0)
-{
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Metadata</h5>
-            <ul class="mb-0">
-                @foreach (var line in Model.InfoLines)
-                {
-                    <li>@line</li>
-                }
-            </ul>
-        </div>
-    </div>
-}
-
-@if (Model.GoogleBooks?.HasData == true)
-{
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">External Book Info (Google Books)</h5>
-
-            <dl class="row mb-0">
-                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Title))
-                {
-                    <dt class="col-sm-3">Matched title</dt>
-                    <dd class="col-sm-9">@Model.GoogleBooks.Title</dd>
-                }
-            </dl>
-
-            @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
-            {
-                <div class="card mb-3" style="max-width: 220px;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Cover</h5>
-
-                        @if (!string.IsNullOrWhiteSpace(Model.OpenLibraryCoverUrl))
-                        {
-                            <img src="@Model.OpenLibraryCoverUrl"
-                                alt="Comic cover for @Model.Comic.MainTitle"
-                                class="img-fluid rounded shadow-sm"
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                            <p class="text-muted mt-2 mb-0" style="display:none;">Cover not available</p>
-                        }
-                        else if (!string.IsNullOrWhiteSpace(Model.OpenLibrary?.CoverUrl))
-                        {
-                            <img src="@Model.OpenLibrary.CoverUrl"
-                                alt="Comic cover for @Model.Comic.MainTitle"
-                                class="img-fluid rounded shadow-sm"
-                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-                            <p class="text-muted mt-2 mb-0" style="display:none;">Cover not available</p>
-                        }
-                        else
-                        {
-                            <p class="text-muted mt-2 mb-0">Cover not available</p>
-                        }
-                    </div>
-                </div>
-            }
-
-            <dl class="row mb-0">
-                @if (Model.GoogleBooks.Authors?.Count > 0)
-                {
-                    <dt class="col-sm-3">Matched authors</dt>
-                    <dd class="col-sm-9">@string.Join(", ", Model.GoogleBooks.Authors)</dd>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Publisher))
-                {
-                    <dt class="col-sm-3">Publisher</dt>
-                    <dd class="col-sm-9">@Model.GoogleBooks.Publisher</dd>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PublishedDate))
-                {
-                    <dt class="col-sm-3">Published date</dt>
-                    <dd class="col-sm-9">@Model.GoogleBooks.PublishedDate</dd>
-                }
-
-                @if (Model.GoogleBooks.PageCount.HasValue)
-                {
-                    <dt class="col-sm-3">Page count</dt>
-                    <dd class="col-sm-9">@Model.GoogleBooks.PageCount</dd>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.Description))
-                {
-                    <dt class="col-sm-3">Description</dt>
-                    <dd class="col-sm-9">@Model.GoogleBooks.Description</dd>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PreviewLink) ||
-                     !string.IsNullOrWhiteSpace(Model.GoogleBooks.InfoLink))
-                {
-                    <dt class="col-sm-3">Links</dt>
-                    <dd class="col-sm-9">
-                        @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.PreviewLink))
-                        {
-                            <a href="@Model.GoogleBooks.PreviewLink" target="_blank" rel="noopener noreferrer" class="me-3">Preview</a>
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(Model.GoogleBooks.InfoLink))
-                        {
-                            <a href="@Model.GoogleBooks.InfoLink" target="_blank" rel="noopener noreferrer">More info</a>
-                        }
-                    </dd>
-                }
-            </dl>
-        </div>
-    </div>
-}
-
-@if (Model.OpenLibrary?.HasData == true)
-{
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Additional Library Data (Open Library)</h5>
-
-            <dl class="row">
-
-                @if (!string.IsNullOrWhiteSpace(Model.OpenLibrary.Title))
-                {
-                    <dt class="col-sm-3">Matched title</dt>
-                    <dd class="col-sm-9">@Model.OpenLibrary.Title</dd>
-                }
-
-                @if (Model.OpenLibrary.FirstPublishYear.HasValue)
-                {
-                    <dt class="col-sm-3">First publish year</dt>
-                    <dd class="col-sm-9">@Model.OpenLibrary.FirstPublishYear</dd>
-                }
-
-                @if (Model.OpenLibrary.AuthorNames?.Count > 0)
-                {
-                    <dt class="col-sm-3">Authors</dt>
-                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.AuthorNames)</dd>
-                }
-
-                @if (Model.OpenLibrary.Subjects?.Count > 0)
-                {
-                    <dt class="col-sm-3">Subjects</dt>
-                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.Subjects)</dd>
-                }
-
-                @if (Model.OpenLibrary.Isbns?.Count > 0)
-                {
-                    <dt class="col-sm-3">Related ISBNs</dt>
-                    <dd class="col-sm-9">@string.Join(", ", Model.OpenLibrary.Isbns)</dd>
-                }
-
-            </dl>
-        </div>
-    </div>
-}
-
-@{
-    var qrTarget = Model.Wikipedia?.PageUrl
-        ?? Model.GoogleBooks?.InfoLink
-        ?? Model.GoogleBooks?.PreviewLink;
-
-    if (!string.IsNullOrWhiteSpace(qrTarget))
-    {
-        var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(qrTarget)}";
-        <div class="card mt-3" style="max-width: 210px;">
-            <div class="card-body text-center">
-                <h5 class="card-title">Scan to Read More</h5>
-                <img src="@qrUrl" alt="QR code linking to more information about @Model.Comic.MainTitle" class="img-fluid" />
-                <p class="text-muted mt-2 mb-0" style="font-size:0.75rem;">
-                    Links to @(!string.IsNullOrWhiteSpace(Model.Wikipedia?.PageUrl) ? "Wikipedia" : "Google Books")
-                </p>
-            </div>
-        </div>
-    }
-}
 
 @if (Model.Wikipedia?.HasData == true)
 {
-    <div class="card mt-3">
+    <div class="card mb-4 shadow-sm">
         <div class="card-body">
-            <h5 class="card-title">About the Author (Wikipedia)</h5>
+            <h5 class="card-title mb-3">About the Author</h5>
             <div class="d-flex gap-3">
                 @if (!string.IsNullOrWhiteSpace(Model.Wikipedia.ThumbnailUrl))
                 {
                     <img src="@Model.Wikipedia.ThumbnailUrl"
                          alt="Photo of @Model.Wikipedia.Title"
-                         class="rounded"
-                         style="width:80px; height:80px; object-fit:cover; flex-shrink:0;" />
+                         class="rounded flex-shrink-0"
+                         style="width:80px; height:80px; object-fit:cover;" />
                 }
                 <div>
-                    <p class="mb-1">@Model.Wikipedia.Extract</p>
-                    @if (!string.IsNullOrWhiteSpace(Model.Wikipedia.PageUrl))
+                    @if (!string.IsNullOrWhiteSpace(Model.Wikipedia.Title))
                     {
-                        <a href="@Model.Wikipedia.PageUrl" target="_blank" rel="noopener noreferrer">Read more on Wikipedia</a>
+                        <h6 class="mb-1">@Model.Wikipedia.Title</h6>
+                    }
+                    <p class="mb-1 lh-lg">@Model.Wikipedia.Extract</p>
+                    @if (!string.IsNullOrWhiteSpace(wikipediaUrl))
+                    {
+                        <a href="@wikipediaUrl" target="_blank" rel="noopener noreferrer" class="small">Read more on Wikipedia &#8599;</a>
                     }
                 </div>
             </div>
@@ -259,62 +220,88 @@
     </div>
 }
 
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">Email this comic to yourself</h5>
-        <div class="d-flex gap-2 align-items-start flex-wrap">
-            <input type="email"
-                   id="email-comic-input"
-                   class="form-control"
-                   style="max-width:300px;"
-                   placeholder="your@email.com"
-                   autocomplete="email" />
-            <button type="button"
-                    id="email-comic-btn"
-                    class="btn btn-outline-primary"
-                    data-comic-id="@Html.Encode(Model.Comic.Id)">
-                Send
-            </button>
-        </div>
-        <div id="email-comic-status" class="mt-2" style="display:none;" role="status" aria-live="polite"></div>
-    </div>
-</div>
 
-<script>
-(function () {
-    var btn = document.getElementById('email-comic-btn');
-    var input = document.getElementById('email-comic-input');
-    var status = document.getElementById('email-comic-status');
-
-    btn.addEventListener('click', function () {
-        var email = input.value.trim();
-        if (!email) {
-            showStatus('Please enter your email address.', false);
-            return;
+@if (User != null && User.IsInRole("Staff"))
+{
+    <div class="mb-4">
+        @if (!Model.IsFlagged)
+        {
+            <form asp-controller="Flags" asp-action="Flag" method="post" class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="comicId" value="@Model.Comic.Id" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                <input type="text" name="reason" class="form-control form-control-sm" style="width:220px;" placeholder="Flag reason (optional)" />
+                <button type="submit" class="btn btn-sm btn-warning">Flag</button>
+            </form>
         }
+        else
+        {
+            <form asp-controller="Flags" asp-action="Unflag" method="post" class="d-inline">
+                <input type="hidden" name="comicId" value="@Model.Comic.Id" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                <button type="submit" class="btn btn-sm btn-outline-warning">Unflag</button>
+            </form>
+            @if (!string.IsNullOrWhiteSpace(Model.FlagReason))
+            {
+                <span class="ms-2 text-warning small">Flagged: @Model.FlagReason</span>
+            }
+        }
+    </div>
+}
 
-        btn.disabled = true;
-        btn.textContent = 'Sending\u2026';
-        status.style.display = 'none';
 
-        var form = new FormData();
-        form.append('comicId', btn.dataset.comicId);
-        form.append('toEmail', email);
+@if (Model.RelatedComics.Count > 0)
+{
+    <div class="mb-4">
+        <h5 class="mb-3">Related Comics</h5>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+            @foreach (var rel in Model.RelatedComics)
+            {
+                <div class="col">
+                    <a asp-action="Details" asp-route-id="@rel.Id"
+                       class="card h-100 text-decoration-none hover-card">
+                        <div class="card-body p-3">
+                            <p class="fw-semibold mb-1 small lh-sm">@rel.MainTitle</p>
+                            @if (rel.Authors?.Count > 0)
+                            {
+                                <p class="mb-1 opacity-75" style="font-size:.75rem;">@rel.Authors.First()</p>
+                            }
+                            @if (rel.Years?.Count > 0)
+                            {
+                                <span class="badge text-bg-secondary" style="font-size:.7rem;">@rel.Years.Min()</span>
+                            }
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
 
-        fetch('/Dataset/EmailComic', { method: 'POST', body: form })
-            .then(function (res) { return res.json(); })
-            .then(function (data) { showStatus(data.message, data.success); })
-            .catch(function () { showStatus('An error occurred. Please try again.', false); })
-            .finally(function () {
-                btn.disabled = false;
-                btn.textContent = 'Send';
-            });
-    });
 
-    function showStatus(message, success) {
-        status.textContent = message;
-        status.className = 'mt-2 ' + (success ? 'text-success' : 'text-danger');
-        status.style.display = 'block';
-    }
-}());
-</script>
+@if (Model.RecentlyViewedComics.Count > 0)
+{
+    <div class="mb-4">
+        <h5 class="mb-3">Recently Viewed</h5>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var rv in Model.RecentlyViewedComics)
+            {
+                <a asp-action="Details" asp-route-id="@rv.Id"
+                   class="card text-decoration-none hover-card"
+                   style="min-width:140px; max-width:180px;">
+                    <div class="card-body p-3">
+                        <p class="fw-semibold mb-1 small lh-sm">@rv.MainTitle</p>
+                        @if (rv.Years?.Count > 0)
+                        {
+                            <p class="mb-0 opacity-75" style="font-size:.75rem;">@rv.Years.Min()</p>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<style>
+.hover-card { transition: box-shadow .15s, transform .15s; }
+.hover-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.15); transform: translateY(-2px); }
+</style>

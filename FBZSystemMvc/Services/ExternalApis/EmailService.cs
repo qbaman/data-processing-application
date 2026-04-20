@@ -53,7 +53,13 @@ public class EmailService : IEmailService
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request, cancellationToken);
-            return response.StatusCode == HttpStatusCode.Accepted;
+            if (response.StatusCode == HttpStatusCode.Accepted)
+                return true;
+
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogWarning("SendGrid returned {Status} for '{Title}' to '{Email}': {Body}",
+                (int)response.StatusCode, comicTitle, toEmail, body);
+            return false;
         }
         catch (Exception ex)
         {

@@ -27,7 +27,7 @@ public class DatasetController : Controller
     private readonly IOpenLibraryService _openLibrary;
     private readonly IWikipediaService _wikipedia;
     private readonly IMemoryCache _cache;
-    private readonly IEmailService _emailService;
+    private readonly RecentlyViewedStore _recentlyViewed;
 
     public DatasetController(
         ISearchService search,
@@ -40,7 +40,7 @@ public class DatasetController : Controller
         IOpenLibraryService openLibrary,
         IWikipediaService wikipedia,
         IMemoryCache cache,
-        IEmailService emailService)
+        RecentlyViewedStore recentlyViewed)
     {
         _search = search;
         _repo = repo;
@@ -52,7 +52,7 @@ public class DatasetController : Controller
         _openLibrary = openLibrary;
         _wikipedia = wikipedia;
         _cache = cache;
-        _emailService = emailService;
+        _recentlyViewed = recentlyViewed;
     }
 
     [HttpGet]
@@ -242,79 +242,19 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
             $"https://covers.openlibrary.org/b/isbn/{Uri.EscapeDataString(firstValidIsbn)}-L.jpg?default=false";
     }
 
+    vm.RelatedComics = _search.FindRelated(comic, 6);
+
+    var recentIds = _recentlyViewed.GetIds(HttpContext);
+    _recentlyViewed.Add(HttpContext, id);
+    var allComics = _repo.GetAllComics().ToList();
+    vm.RecentlyViewedComics = recentIds
+        .Where(rid => rid != id)
+        .Select(rid => allComics.FirstOrDefault(c => c.Id == rid))
+        .Where(c => c is not null)
+        .Cast<Comic>()
+        .ToList();
+
         return View(vm);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> EmailComic(
-        [FromForm] string comicId,
-        [FromForm] string toEmail,
-        CancellationToken cancellationToken)
-    {
-        if (!IsValidEmailFormat(toEmail))
-            return Json(new { success = false, message = "Invalid email address." });
-
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        if (!TryConsumeEmailQuota(ip))
-            return Json(new { success = false, message = "Rate limit reached: max 5 emails per hour per IP." });
-
-        var comic = _repo.GetAllComics().FirstOrDefault(c => c.Id == comicId);
-        if (comic is null)
-            return Json(new { success = false, message = "Comic not found." });
-
-        _cache.TryGetValue($"gb:{comicId}", out GoogleBooksLookupResult? gb);
-
-        var authorName = comic.Authors?.FirstOrDefault() ?? string.Empty;
-        var description = gb?.Description ?? string.Empty;
-        var googleBooksUrl = gb?.InfoLink ?? gb?.PreviewLink ?? string.Empty;
-
-        var isbn = comic.Isbns?
-            .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i) && i.Trim().ToLower() != "missing");
-        var coverImageUrl = string.IsNullOrWhiteSpace(isbn)
-            ? string.Empty
-            : $"https://covers.openlibrary.org/b/isbn/{Uri.EscapeDataString(isbn)}-L.jpg?default=false";
-
-        var sent = await _emailService.SendComicEmailAsync(
-            toEmail,
-            comic.MainTitle ?? string.Empty,
-            authorName,
-            description,
-            coverImageUrl,
-            googleBooksUrl,
-            cancellationToken);
-
-        return Json(sent
-            ? new { success = true, message = "Email sent! Check your inbox." }
-            : new { success = false, message = "Failed to send email. Please try again later." });
-    }
-
-    // Per-IP sliding window: max 5 email sends per hour.
-    private bool TryConsumeEmailQuota(string ip)
-    {
-        var key = $"emailrl:{ip}";
-        var now = DateTimeOffset.UtcNow;
-
-        if (_cache.TryGetValue<(int Count, DateTimeOffset ExpiresAt)>(key, out var entry))
-        {
-            if (entry.Count >= 5) return false;
-            _cache.Set(key, (entry.Count + 1, entry.ExpiresAt), entry.ExpiresAt);
-            return true;
-        }
-
-        var expires = now.AddHours(1);
-        _cache.Set(key, (Count: 1, ExpiresAt: expires), expires);
-        return true;
-    }
-
-    private static bool IsValidEmailFormat(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email)) return false;
-        try
-        {
-            var addr = new System.Net.Mail.MailAddress(email);
-            return string.Equals(addr.Address, email.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-        catch { return false; }
     }
 
     public IActionResult Exit()

@@ -82,6 +82,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
+builder.Services.AddSingleton<FBZSystemMvc.Services.RecentlyViewedStore>();
 
 // external API clients
 builder.Services.AddHttpClient("dataset");
@@ -124,6 +125,27 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
+// Security headers on every response
+app.Use(async (ctx, next) =>
+{
+    var h = ctx.Response.Headers;
+    h["X-Content-Type-Options"]  = "nosniff";
+    h["X-Frame-Options"]         = "SAMEORIGIN";
+    h["Referrer-Policy"]         = "strict-origin-when-cross-origin";
+    h["Permissions-Policy"]      = "camera=(), microphone=(), geolocation=()";
+    h["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; " +
+        "font-src 'self' cdn.jsdelivr.net; " +
+        "img-src 'self' data: api.qrserver.com covers.openlibrary.org " +
+            "upload.wikimedia.org books.google.com; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none';";
+    await next();
+});
+
 app.UseRouting();
 app.UseRateLimiter();
 app.UseSession();
