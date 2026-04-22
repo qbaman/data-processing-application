@@ -79,6 +79,12 @@ builder.Services.AddRateLimiter(options =>
         limiter.QueueLimit = 0;
     });
     options.RejectionStatusCode = 429;
+    options.OnRejected = async (ctx, token) =>
+    {
+        ctx.HttpContext.Response.ContentType = "text/plain";
+        await ctx.HttpContext.Response.WriteAsync(
+            "Too many requests — please wait a moment before trying again.", token);
+    };
 });
 
 builder.Services.AddSingleton<FBZSystemMvc.Services.SearchListStore>();
