@@ -9,10 +9,12 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 | Area | Highlights |
 |------|-----------|
 | Search | Title, author, genre, year range, language, edition, resource type, content type |
-| Comic Detail | Enhanced layout with cover image, summary, structured metadata, external links |
-| Related Comics | Auto-suggests 4–6 similar comics by author, genre/topic, and year proximity |
+| Comic Detail | Enhanced layout with cover image, description, AI summary, structured metadata, external links |
+| Related Comics | Auto-suggests up to 6 similar comics by author, genre/topic, and year proximity |
+| Related Videos | YouTube search for comic reviews and explainers, shown as thumbnail cards |
+| AI Summary | On-demand OpenAI-generated catalogue description with 24-hour caching |
 | Recently Viewed | Session-tracked strip of the last 5 comics visited |
-| External APIs | Google Books · Open Library · Comic Vine · Wikipedia · QR Code |
+| External APIs | Google Books · Open Library · Comic Vine · Wikipedia · YouTube · QR Code |
 | Newsletter | Footer subscription prototype (UI demo) |
 | Accounts | Register / login / logout via ASP.NET Core Identity |
 | Saved Lists | Persist search results across sessions in SQLite |
@@ -26,13 +28,15 @@ A full-stack ASP.NET Core MVC web application for exploring the British Library 
 
 Each comic detail page is enriched with live data from the following APIs:
 
-**OpenAI** - AI simplified summaries and explanations of comic data.
+**OpenAI (gpt-4o-mini)** — on-demand AI-written catalogue summary. Click "Generate Summary" on any detail page. Results cached for 24 hours. Requires `OpenAI:ApiKey`.
+
+**YouTube Data API v3** — searches for comic reviews, explainers, and reading guides by title. Displays up to 5 video thumbnails linking to YouTube. Costs 100 quota units per search (10,000 free/day). Requires `YouTube:ApiKey`.
 
 **Google Books** — matches by ISBN or title, returns publisher, page count, description, and preview links.
 
 **Open Library** — fetches cover art, first publish year, subjects, and related ISBNs.
 
-**Comic Vine** — looks up comic-specific metadata including publisher, deck summary, and series information.
+**Comic Vine** — looks up comic-specific metadata including publisher, deck summary, and series information. Requires `ComicVine:ApiKey`.
 
 **Wikipedia** — looks up the first author via `/api/rest_v1/page/summary/{author}`, returns a biography, thumbnail, and link to the full article. No API key required.
 
@@ -59,7 +63,7 @@ Each comic detail page is enriched with live data from the following APIs:
 - Fixed-window rate limiting on `/Dataset` — 30 requests per minute per IP, returns 429 when exceeded
 - API keys loaded from environment variables / user secrets, never hardcoded
 - `ILogger` on all API services — failures logged as warnings, never crash the app
-- API results cached in memory for 1 hour per comic to reduce external calls
+- API results cached in memory (1 hour for most APIs, 24 hours for AI summaries)
 - Anti-forgery tokens on all state-changing forms (ASP.NET Core default)
 - HSTS enabled in production
 
@@ -70,9 +74,11 @@ Each comic detail page is enriched with live data from the following APIs:
 The detail page presents each comic in a structured, readable layout:
 
 - **Hero section** — cover image (from Open Library), title, author, year, genre, and quick-access buttons (Google Books, Wikipedia, QR code toggle)
-- **Summary** — description from Google Books or Wikipedia extract
+- **Description** — publisher description from Google Books or Wikipedia extract
+- **AI Summary** — on-demand OpenAI-generated catalogue description (Generate Summary button)
 - **Details card** — clean label/value metadata including publisher, page count, subjects, and library classification fields
 - **Author bio** — Wikipedia photo and biography when available
+- **Related Videos** — up to 5 YouTube video thumbnails (reviews, explainers, reading guides)
 - **Related Comics** — up to 6 automatically suggested comics scored by: same author (+3), shared genre or topic (+2 each), year within ±5 years (+1). Displayed as clickable cards.
 - **Recently Viewed** — the last 5 unique comics visited in the current session, shown as a quick-navigation strip at the bottom of the page
 
@@ -150,6 +156,20 @@ Open `http://localhost:5236` in your browser.
 | `/staff/analytics` | Staff — analytics dashboard |
 | `/staff/dataset` | Staff — dataset update |
 
+### API Keys
+
+Set keys via `dotnet user-secrets` (never commit them):
+
+```bash
+cd FBZSystemMvc
+dotnet user-secrets set "OpenAI:ApiKey" "sk-..."
+dotnet user-secrets set "YouTube:ApiKey" "AIza..."
+dotnet user-secrets set "ComicVine:ApiKey" "your-key"
+dotnet user-secrets set "SendGrid:ApiKey" "SG.your-key"
+```
+
+On AWS Elastic Beanstalk, set these as environment properties using double-underscore notation (e.g. `OpenAI__ApiKey`).
+
 ---
 
 ## 🧪 Automated Tests
@@ -178,7 +198,7 @@ FBZSystemMvc/
 ├── Persistence/          EF Core DbContext and entities
 ├── Repositories/         CSV data access with hot-reload support
 ├── Services/
-│   ├── ExternalApis/     Google Books, Open Library, Comic Vine, Wikipedia
+│   ├── ExternalApis/     Google Books, Open Library, Comic Vine, Wikipedia, YouTube, OpenAI
 │   ├── Persistence/      analytics and saved comics services
 │   ├── DatasetUpdates/   background dataset update service
 │   ├── RecentlyViewedStore.cs   session-based recently viewed tracking
@@ -199,7 +219,7 @@ infra/terraform/          AWS infrastructure definitions
 | Single Responsibility | `ComicRepositoryCsv` loads CSV · `SearchService` handles filtering · `AnalyticsService` handles analytics |
 | Open/Closed | New sort or group strategies can be added without changing `SearchService` |
 | Liskov Substitution | Any `ISortStrategy` or `IGroupingStrategy` can be swapped in transparently |
-| Interface Segregation | Small focused interfaces — `IComicRepository`, `ISearchService`, `IAnalyticsService` |
+| Interface Segregation | Small focused interfaces — `IComicRepository`, `ISearchService`, `IAnalyticsService`, `IYouTubeService`, `IAISummaryService` |
 | Dependency Inversion | Controllers and services depend on abstractions; all wiring in `Program.cs` |
 
 ---
