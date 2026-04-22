@@ -142,7 +142,7 @@ app.Use(async (ctx, next) =>
         "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; " +
         "font-src 'self' cdn.jsdelivr.net; " +
         "img-src 'self' data: api.qrserver.com covers.openlibrary.org " +
-            "upload.wikimedia.org books.google.com; " +
+            "upload.wikimedia.org books.google.com i.ytimg.com; " +
         "connect-src 'self'; " +
         "frame-ancestors 'none';";
     await next();

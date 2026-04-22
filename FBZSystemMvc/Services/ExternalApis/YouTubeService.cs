@@ -69,8 +69,10 @@ public class YouTubeService : IYouTubeService
                 if (string.IsNullOrWhiteSpace(videoId)) continue;
 
                 var snippet = item.GetProperty("snippet");
-                var videoTitle = snippet.TryGetProperty("title", out var t) ? t.GetString() : null;
-                var channel = snippet.TryGetProperty("channelTitle", out var c) ? c.GetString() : null;
+                var videoTitle = snippet.TryGetProperty("title", out var t)
+                    ? System.Net.WebUtility.HtmlDecode(t.GetString()) : null;
+                var channel = snippet.TryGetProperty("channelTitle", out var c)
+                    ? System.Net.WebUtility.HtmlDecode(c.GetString()) : null;
 
                 string? thumbnail = null;
                 if (snippet.TryGetProperty("thumbnails", out var thumbs) &&
