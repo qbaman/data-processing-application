@@ -22,6 +22,7 @@ public class ComicDetailsViewModel
     public OpenLibraryLookupResult? OpenLibrary { get; set; }
     public ComicVineLookupResult? ComicVine { get; set; }
     public WikipediaLookupResult? Wikipedia { get; set; }
+    public YouTubeLookupResult? YouTube { get; set; }
 
     public List<Comic> RelatedComics { get; set; } = new();
     public List<Comic> RecentlyViewedComics { get; set; } = new();

@@ -240,6 +240,39 @@
 }
 
 
+@if (Model.YouTube?.HasData == true)
+{
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Related Videos</h5>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
+                @foreach (var video in Model.YouTube.Videos)
+                {
+                    <div class="col">
+                        <a href="@video.WatchUrl"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="card h-100 text-decoration-none hover-card">
+                            @if (!string.IsNullOrWhiteSpace(video.ThumbnailUrl))
+                            {
+                                <img src="@video.ThumbnailUrl"
+                                     alt="@video.Title"
+                                     class="card-img-top"
+                                     style="object-fit:cover; height:120px;" />
+                            }
+                            <div class="card-body p-2">
+                                <p class="fw-semibold mb-1 small lh-sm">@video.Title</p>
+                                <p class="mb-0 opacity-75" style="font-size:.75rem;">@video.ChannelTitle</p>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+
 @if (User != null && User.IsInRole("Staff"))
 {
     <div class="mb-4">

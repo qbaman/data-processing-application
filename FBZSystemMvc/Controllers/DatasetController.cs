@@ -29,6 +29,7 @@ public class DatasetController : Controller
     private readonly IMemoryCache _cache;
     private readonly RecentlyViewedStore _recentlyViewed;
     private readonly IAISummaryService _aiSummary;
+    private readonly IYouTubeService _youtube;
 
     public DatasetController(
         ISearchService search,
@@ -42,7 +43,8 @@ public class DatasetController : Controller
         IWikipediaService wikipedia,
         IMemoryCache cache,
         RecentlyViewedStore recentlyViewed,
-        IAISummaryService aiSummary)
+        IAISummaryService aiSummary,
+        IYouTubeService youtube)
     {
         _search = search;
         _repo = repo;
@@ -56,6 +58,7 @@ public class DatasetController : Controller
         _cache = cache;
         _recentlyViewed = recentlyViewed;
         _aiSummary = aiSummary;
+        _youtube = youtube;
     }
 
     [HttpGet]
@@ -244,6 +247,10 @@ public async Task<IActionResult> Details(string id, CancellationToken cancellati
         vm.OpenLibraryCoverUrl =
             $"https://covers.openlibrary.org/b/isbn/{Uri.EscapeDataString(firstValidIsbn)}-L.jpg?default=false";
     }
+
+    vm.YouTube = await _cache.GetOrCreateAsync($"yt:{id}", _ =>
+        _youtube.SearchAsync(comic, cancellationToken));
+    if (vm.YouTube is not null) _cache.Set($"yt:{id}", vm.YouTube, cacheOptions);
 
     vm.RelatedComics = _search.FindRelated(comic, 6);
 

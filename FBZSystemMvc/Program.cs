@@ -92,6 +92,7 @@ builder.Services.AddHttpClient<IComicVineService, ComicVineService>();
 builder.Services.AddHttpClient<IWikipediaService, WikipediaService>();
 builder.Services.AddHttpClient<IEmailService, EmailService>();
 builder.Services.AddHttpClient<IAISummaryService, AISummaryService>();
+builder.Services.AddHttpClient<IYouTubeService, YouTubeService>();
 
 // dataset update
 builder.Services.Configure<DatasetUpdateOptions>(builder.Configuration.GetSection("DatasetUpdate"));
