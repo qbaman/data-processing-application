@@ -377,3 +377,6 @@ FodyWeavers.xsd.DS_Store
 FBZSystemMvc/Data/dataset_update_status.json
 # Local dev secrets — never commit API keys
 FBZSystemMvc/appsettings.Development.json
+# SQLite WAL mode temp files (created on open, cleaned on close)
+*.db-shm
+*.db-wal

@@ -4,7 +4,24 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet user-secrets *)"
+      "Bash(dotnet user-secrets *)",
+      "Bash(git add *)",
+      "Bash(rm \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application/FBZSystemMvc/Controllers/DatasetController 3.cs\")",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)",
+      "Bash(git reset *)",
+      "Bash(git checkout *)",
+      "Bash(git rebase *)",
+      "Bash(rm -f \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application/.git/refs/heads/main 2\" \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application/.git/refs/heads/main 3\")",
+      "Bash(git -C \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application\" fetch origin)",
+      "Bash(git -C \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application\" rebase origin/main)",
+      "Bash(git -C \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application\" push origin main)",
+      "Bash(git stash *)",
+      "Bash(git -C \"c:/Users/starx/iCloudDrive/School/Computer Science/25-26/Visual Studio/Github/data-processing-application\" ls-files --error-unmatch .gitignore)",
+      "Bash(terraform version *)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }
